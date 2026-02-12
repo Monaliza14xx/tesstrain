@@ -18,7 +18,7 @@ ltsvfile =  sys.argv[7] # "lstmeval.tsv"
 
 maxticks=10
 
-# Read and sort data files more efficiently - chain operations
+# Chain read and sort operations to reduce intermediate dataframe copies
 ydf = pd.read_csv(ytsvfile, sep='\t', encoding='utf-8').sort_values('TrainingIteration')
 cdf = pd.read_csv(ctsvfile, sep='\t', encoding='utf-8').sort_values('TrainingIteration')
 sdf = pd.read_csv(stsvfile, sep='\t', encoding='utf-8').sort_values('TrainingIteration')

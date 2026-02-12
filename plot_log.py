@@ -17,7 +17,7 @@ stsvfile =  sys.argv[6] # "sub.tsv"
 
 maxticks=4
 
-# Read and sort data files more efficiently
+# Chain read and sort operations to reduce intermediate dataframe copies
 ydf = pd.read_csv(ytsvfile, sep='\t', encoding='utf-8').sort_values('LearningIteration')
 cdf = pd.read_csv(ctsvfile, sep='\t', encoding='utf-8').sort_values('LearningIteration')
 edf = pd.read_csv(etsvfile, sep='\t', encoding='utf-8').sort_values('LearningIteration')
