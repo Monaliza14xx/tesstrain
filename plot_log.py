@@ -41,8 +41,8 @@ sx = sdf['LearningIteration'].values
 st = sdf['TrainingIteration'].values
 
 def annot_min(boxcolor, xpos, ypos, x, y, z):
-    # Use pandas dropna to efficiently find valid indices
-    valid_indices = ~pd.isna(y)
+    # Use numpy to efficiently find valid indices
+    valid_indices = ~np.isnan(y)
     if not valid_indices.any():
         return
     
@@ -54,7 +54,7 @@ def annot_min(boxcolor, xpos, ypos, x, y, z):
     ymin = valid_y[min_idx]
     xmin = valid_x[min_idx]
     
-    if pd.isna(valid_z).any():
+    if np.isnan(valid_z).any():
         boxtext = " {:.3f}% at {:,} learning iterations " .format(ymin, xmin)
     else:
         tmin = valid_z[min_idx]
