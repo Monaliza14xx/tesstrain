@@ -40,9 +40,8 @@ args = arg_parser.parse_args()
 # main
 #
 
-# load image
-with open(args.image, 'rb') as f:
-    im = Image.open(f)
+# load image - use context manager to ensure proper cleanup
+with Image.open(args.image) as im:
     width, height = im.size
 
 # load gt

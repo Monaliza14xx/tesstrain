@@ -4,6 +4,12 @@ export
 # This makes starting with a very large number of GT lines much faster.
 MAKEFLAGS += -r
 
+# PERFORMANCE TIP: Use parallel execution for faster processing
+# Run with `make -j$(nproc)` to use all CPU cores for parallel processing
+# of .box and .lstmf files. For example:
+#   make -j4 training MODEL_NAME=foo
+# This can significantly speed up training data preparation.
+
 ## Make sure that sort always uses the same sort order.
 LC_ALL := C
 

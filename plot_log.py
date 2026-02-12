@@ -17,44 +17,51 @@ stsvfile =  sys.argv[6] # "sub.tsv"
 
 maxticks=4
 
-ydf = pd.read_csv(ytsvfile,sep='\t', encoding='utf-8')
-cdf = pd.read_csv(ctsvfile,sep='\t', encoding='utf-8')
-edf = pd.read_csv(etsvfile,sep='\t', encoding='utf-8')
-sdf = pd.read_csv(stsvfile,sep='\t', encoding='utf-8')
+# Read and sort data files more efficiently
+ydf = pd.read_csv(ytsvfile, sep='\t', encoding='utf-8').sort_values('LearningIteration')
+cdf = pd.read_csv(ctsvfile, sep='\t', encoding='utf-8').sort_values('LearningIteration')
+edf = pd.read_csv(etsvfile, sep='\t', encoding='utf-8').sort_values('LearningIteration')
+sdf = pd.read_csv(stsvfile, sep='\t', encoding='utf-8').sort_values('LearningIteration')
 
-ydf = ydf.sort_values('LearningIteration')
-cdf = cdf.sort_values('LearningIteration')
-edf = edf.sort_values('LearningIteration')
-sdf = sdf.sort_values('LearningIteration')
+# Extract columns once to avoid repeated dataframe access
+y = ydf['IterationCER'].values
+x = ydf['LearningIteration'].values
+t = ydf['TrainingIteration'].values
 
-y = ydf['IterationCER']
-x = ydf['LearningIteration']
-t = ydf['TrainingIteration']
+c = cdf['CheckpointCER'].values
+cx = cdf['LearningIteration'].values
+ct = cdf['TrainingIteration'].values
 
-c = cdf['CheckpointCER']
-cx = cdf['LearningIteration']
-ct = cdf['TrainingIteration']
+e = edf['EvalCER'].values
+ex = edf['LearningIteration'].values
+et = edf['TrainingIteration'].values # Not available in training log file
 
-e = edf['EvalCER']
-ex = edf['LearningIteration']
-et = edf['TrainingIteration'] # Not available in training log file
-
-s = sdf['SubtrainerCER']
-sx = sdf['LearningIteration']
-st = sdf['TrainingIteration']
+s = sdf['SubtrainerCER'].values
+sx = sdf['LearningIteration'].values
+st = sdf['TrainingIteration'].values
 
 def annot_min(boxcolor, xpos, ypos, x, y, z):
-    if z.isnull().values.any():
-          xmin = x.iloc[np.argmin(y)]
-          ymin = y.min()
-          boxtext= " {:.3f}% at {:,} learning iterations " .format(ymin,xmin)
+    # Use pandas dropna to efficiently find valid indices
+    valid_indices = ~pd.isna(y)
+    if not valid_indices.any():
+        return
+    
+    valid_y = y[valid_indices]
+    valid_x = x[valid_indices]
+    valid_z = z[valid_indices]
+    
+    min_idx = np.argmin(valid_y)
+    ymin = valid_y[min_idx]
+    xmin = valid_x[min_idx]
+    
+    if pd.isna(valid_z).any():
+        boxtext = " {:.3f}% at {:,} learning iterations " .format(ymin, xmin)
     else:
-          tmin = z.iloc[np.argmin(y)]
-          xmin = x.iloc[np.argmin(y)]
-          ymin = y.min()
-          boxtext= " {:.3f}% at {:,} / {:,} " .format(ymin,xmin,tmin)
-    ax1.annotate(boxtext, xy=(xmin, ymin), xytext=(xpos,ypos), textcoords='offset points', color='black', fontsize=9,
-        arrowprops=dict(shrinkA=1, shrinkB=1, fc=boxcolor,alpha=0.7, ec='white', connectionstyle="arc3"),
+        tmin = valid_z[min_idx]
+        boxtext = " {:.3f}% at {:,} / {:,} " .format(ymin, xmin, tmin)
+    
+    ax1.annotate(boxtext, xy=(xmin, ymin), xytext=(xpos, ypos), textcoords='offset points', color='black', fontsize=9,
+        arrowprops=dict(shrinkA=1, shrinkB=1, fc=boxcolor, alpha=0.7, ec='white', connectionstyle="arc3"),
         bbox=dict(boxstyle='round,pad=0.2', fc=boxcolor, alpha=0.3))
 
 PlotTitle="Tesseract LSTM Training : " + modelname
@@ -76,18 +83,22 @@ ax1.scatter(x, y, c='teal', alpha=0.7, s=0.5, label='BCER at #iterations/100 - l
 ax1.plot(x, y, 'teal', alpha=0.3, linewidth=0.5, label='Training BCER')
 ax1.grid(True)
 
-if not c.dropna().empty: # not NaN or empty
+# Check for non-NaN values more efficiently using pandas
+c_series = pd.Series(c)
+if not c_series.isna().all():
     ax1.scatter(cx, c, c='teal', marker='x', s=35,
        label='BCER at checkpoints - lstmtraining - list.train', alpha=0.5)
     annot_min('teal',-50,-50,cx,c,ct)
 
-if not e.dropna().empty: # not NaN or empty
+e_series = pd.Series(e)
+if not e_series.isna().all():
     ax1.plot(ex, e, 'magenta', linewidth=1.0, label='Validation BCER')
     ax1.scatter(ex, e, c='magenta', s=30,
        label='BCER at checkpoints - lstmtraining - list.eval', alpha=0.5)
     annot_min('magenta',-50,50,ex,e,et)
 
-if not s.dropna().empty: # not NaN or empty
+s_series = pd.Series(s)
+if not s_series.isna().all():
     ax1.plot(sx, s, 'orange', linewidth=0.5, label='SubTrainer BCER')
     ax1.scatter(sx, s, c='orange', s=0.5,
        label='BCER for UpdateSubtrainer every 100 iterations', alpha=0.5)

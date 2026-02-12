@@ -18,39 +18,46 @@ ltsvfile =  sys.argv[7] # "lstmeval.tsv"
 
 maxticks=10
 
-ydf = pd.read_csv(ytsvfile,sep='\t', encoding='utf-8')
-cdf = pd.read_csv(ctsvfile,sep='\t', encoding='utf-8')
-sdf = pd.read_csv(stsvfile,sep='\t', encoding='utf-8')
-ldf = pd.read_csv(ltsvfile,sep='\t', encoding='utf-8')
+# Read and sort data files more efficiently - chain operations
+ydf = pd.read_csv(ytsvfile, sep='\t', encoding='utf-8').sort_values('TrainingIteration')
+cdf = pd.read_csv(ctsvfile, sep='\t', encoding='utf-8').sort_values('TrainingIteration')
+sdf = pd.read_csv(stsvfile, sep='\t', encoding='utf-8').sort_values('TrainingIteration')
+ldf = pd.read_csv(ltsvfile, sep='\t', encoding='utf-8').sort_values('TrainingIteration')
 
-ydf = ydf.sort_values('TrainingIteration')
-cdf = cdf.sort_values('TrainingIteration')
-sdf = sdf.sort_values('TrainingIteration')
-ldf = ldf.sort_values('TrainingIteration')
+# Extract columns once as numpy arrays to avoid repeated dataframe access
+y = ydf['IterationCER'].values
+x = ydf['LearningIteration'].values
+t = ydf['TrainingIteration'].values
 
-y = ydf['IterationCER']
-x = ydf['LearningIteration']
-t = ydf['TrainingIteration']
+c = cdf['CheckpointCER'].values
+cx = cdf['LearningIteration'].values
+ct = cdf['TrainingIteration'].values
 
-c = cdf['CheckpointCER']
-cx = cdf['LearningIteration']
-ct = cdf['TrainingIteration']
+s = sdf['SubtrainerCER'].values
+sx = sdf['LearningIteration'].values
+st = sdf['TrainingIteration'].values
 
-s = sdf['SubtrainerCER']
-sx = sdf['LearningIteration']
-st = sdf['TrainingIteration']
-
-l = ldf['EvalCER']
-lx = ldf['LearningIteration']
-lt = ldf['TrainingIteration']
+l = ldf['EvalCER'].values
+lx = ldf['LearningIteration'].values
+lt = ldf['TrainingIteration'].values
 
 def annot_min(boxcolor, xpos, ypos, x, y, z):
-    tmin = z.iloc[np.argmin(y)]
-    xmin = x.iloc[np.argmin(y)]
-    ymin = y.min()
-    boxtext= " {:.3f}% at {:,} / {:,} " .format(ymin,xmin,tmin)
-    ax1.annotate(boxtext, xy=(tmin, ymin), xytext=(xpos,ypos), textcoords='offset points', color='black', fontsize=9,
-        arrowprops=dict(shrinkA=1, shrinkB=1, fc=boxcolor,alpha=0.7, ec='white', connectionstyle="arc3"),
+    # Use numpy for efficient min finding on arrays
+    valid_indices = ~np.isnan(y)
+    if not valid_indices.any():
+        return
+    
+    valid_y = y[valid_indices]
+    valid_x = x[valid_indices]
+    valid_z = z[valid_indices]
+    
+    min_idx = np.argmin(valid_y)
+    tmin = valid_z[min_idx]
+    xmin = valid_x[min_idx]
+    ymin = valid_y[min_idx]
+    boxtext = " {:.3f}% at {:,} / {:,} " .format(ymin, xmin, tmin)
+    ax1.annotate(boxtext, xy=(tmin, ymin), xytext=(xpos, ypos), textcoords='offset points', color='black', fontsize=9,
+        arrowprops=dict(shrinkA=1, shrinkB=1, fc=boxcolor, alpha=0.7, ec='white', connectionstyle="arc3"),
         bbox=dict(boxstyle='round,pad=0.2', fc=boxcolor, alpha=0.3))
 
 PlotTitle="Tesseract LSTM Training : " + modelname
@@ -72,17 +79,21 @@ ax1.scatter(t, y, c='teal', alpha=0.7, s=0.5, label='BCER at #iterations/100 - l
 ax1.plot(t, y, 'teal', alpha=0.3, linewidth=0.5, label='Training BCER')
 ax1.grid(True)
 
-if not c.dropna().empty: # not NaN or empty
+# Check for non-NaN values more efficiently using numpy
+c_valid = ~np.isnan(c).all()
+if c_valid:
     ax1.scatter(ct, c, c='teal', marker='x', s=35,
        label='BCER at checkpoints - lstmtraining - list.train', alpha=0.5)
     annot_min('teal',0,-50,cx,c,ct)
 
-if not l.dropna().empty: # not NaN or empty
+l_valid = ~np.isnan(l).all()
+if l_valid:
     ax1.plot(lt, l, 'magenta', linewidth=0.5, label='Validation BCER')
     ax1.scatter(lt, l, c='magenta', s=10, label='BCER at checkpoints - lstmeval - list.eval', alpha=0.5)
     annot_min('magenta',0,-50,lx,l,lt)
 
-if not s.dropna().empty: # not NaN or empty
+s_valid = ~np.isnan(s).all()
+if s_valid:
     ax1.plot(st, s, 'orange', linewidth=0.5, label='SubTrainer BCER')
     ax1.scatter(st, s, c='orange', s=0.5,
        label='BCER for UpdateSubtrainer every 100 iterations', alpha=0.5)

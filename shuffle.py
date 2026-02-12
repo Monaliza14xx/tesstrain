@@ -15,29 +15,36 @@
 
 import random
 import sys
+import os
 
 # If at least one argument was given, the first argument is used as the seed.
 if len(sys.argv) > 1:
     random.seed(sys.argv[1])
 
 if len(sys.argv) > 2:
-    fd0 = open(sys.argv[2], 'r')
+    input_file = sys.argv[2]
+    # Read, sort and shuffle
+    with open(input_file, 'r') as f:
+        lines = f.readlines()
+    
+    # First sort the input lines (directory entries may come in undefined order).
+    lines.sort()
+    
+    # Then shuffle the lines.
+    random.shuffle(lines)
+    
+    # Write back to the same file
+    with open(input_file, 'w') as f:
+        f.writelines(lines)
 else:
-    fd0 = sys.stdin
-
-# Read lines from standard input.
-lines = fd0.readlines()
-
-# First sort the input lines (directory entries may come in undefined order).
-lines.sort()
-
-# Then shuffle the lines.
-random.shuffle(lines)
-
-if len(sys.argv) > 2:
-    fd1 = open(sys.argv[2], 'w')
-else:
-    fd1 = sys.stdout
-
-# Write the shuffled lines to standard output.
-fd1.writelines(lines)
+    # Read lines from standard input.
+    lines = sys.stdin.readlines()
+    
+    # First sort the input lines (directory entries may come in undefined order).
+    lines.sort()
+    
+    # Then shuffle the lines.
+    random.shuffle(lines)
+    
+    # Write the shuffled lines to standard output.
+    sys.stdout.writelines(lines)
