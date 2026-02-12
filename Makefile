@@ -110,6 +110,9 @@ RATIO_TRAIN := 0.90
 # Default Target Error Rate. Default: $(TARGET_ERROR_RATE)
 TARGET_ERROR_RATE := 0.01
 
+# Enable OpenCL for GPU acceleration. Default: $(OPENCL_ENABLE)
+OPENCL_ENABLE := 0
+
 # Use current Python program name on Windows
 ifeq ($(OS),Windows_NT)
     PY_CMD := python
@@ -118,6 +121,13 @@ else
 endif
 
 LOG_FILE = $(OUTPUT_DIR)/training.log
+
+# Set OpenCL flags if enabled
+ifeq ($(OPENCL_ENABLE),1)
+    OPENCL_FLAGS := --opencl 1
+else
+    OPENCL_FLAGS :=
+endif
 
 # BEGIN-EVAL makefile-parser --make-help Makefile
 
@@ -164,6 +174,7 @@ help:
 	@echo "    RANDOM_SEED        Random seed for shuffling of the training data. Default: $(RANDOM_SEED)"
 	@echo "    RATIO_TRAIN        Ratio of train / eval training data. Default: $(RATIO_TRAIN)"
 	@echo "    TARGET_ERROR_RATE  Default Target Error Rate. Default: $(TARGET_ERROR_RATE)"
+	@echo "    OPENCL_ENABLE      Enable OpenCL for GPU acceleration (0 or 1). Default: $(OPENCL_ENABLE)"
 	@echo "    LOG_FILE           File to copy training output to and read plot figures from. Default: $(LOG_FILE)"
 
 # END-EVAL
@@ -273,14 +284,16 @@ $(OUTPUT_DIR)/tessdata_best/%.traineddata: $(OUTPUT_DIR)/checkpoints/%.checkpoin
           --stop_training \
           --continue_from $< \
           --traineddata $(PROTO_MODEL) \
-          --model_output $@
+          --model_output $@ \
+          $(OPENCL_FLAGS)
 $(OUTPUT_DIR)/tessdata_fast/%.traineddata: $(OUTPUT_DIR)/checkpoints/%.checkpoint | $(OUTPUT_DIR)/tessdata_fast
 	lstmtraining \
           --stop_training \
           --continue_from $< \
           --traineddata $(PROTO_MODEL) \
           --convert_to_int \
-          --model_output $@
+          --model_output $@ \
+          $(OPENCL_FLAGS)
 
 # Build the proto model
 proto-model: $(PROTO_MODEL)
@@ -319,6 +332,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	  --eval_listfile $(OUTPUT_DIR)/list.eval \
 	  --max_iterations $(MAX_ITERATIONS) \
 	  --target_error_rate $(TARGET_ERROR_RATE) \
+	  $(OPENCL_FLAGS) \
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
@@ -326,7 +340,8 @@ $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	--stop_training \
 	--continue_from $(LAST_CHECKPOINT) \
 	--traineddata $(PROTO_MODEL) \
-	--model_output $@
+	--model_output $@ \
+	$(OPENCL_FLAGS)
 else
 $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@mkdir -p $(OUTPUT_DIR)/checkpoints
@@ -341,6 +356,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	  --eval_listfile $(OUTPUT_DIR)/list.eval \
 	  --max_iterations $(MAX_ITERATIONS) \
 	  --target_error_rate $(TARGET_ERROR_RATE) \
+	  $(OPENCL_FLAGS) \
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
@@ -348,7 +364,8 @@ $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	--stop_training \
 	--continue_from $(LAST_CHECKPOINT) \
 	--traineddata $(PROTO_MODEL) \
-	--model_output $@
+	--model_output $@ \
+	$(OPENCL_FLAGS)
 endif
 
 # plotting

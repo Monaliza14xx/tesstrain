@@ -143,6 +143,7 @@ Run `make help` to see all the possible targets and variables:
     RANDOM_SEED        Random seed for shuffling of the training data. Default: 0
     RATIO_TRAIN        Ratio of train / eval training data. Default: 0.90
     TARGET_ERROR_RATE  Stop training if the character error rate (CER in percent) gets below this value. Default: 0.01
+    OPENCL_ENABLE      Enable OpenCL for GPU acceleration (0 or 1). Default: 0
     LOG_FILE           File to copy training output to and read plot figures from. Default: OUTPUT_DIR/training.log
 ```
 
@@ -155,6 +156,19 @@ you want.
 
 * Fine-tuning: select (and install) a `START_MODEL`
 * From scratch: specify a `NET_SPEC` (see [documentation](https://tesseract-ocr.github.io/tessdoc/tess4/VGSLSpecs.html))
+
+### GPU Acceleration via OpenCL
+
+Tesseract training can be accelerated using OpenCL for GPU computation. To enable GPU acceleration:
+
+    make training MODEL_NAME=name-of-the-resulting-model OPENCL_ENABLE=1
+
+**Prerequisites:**
+- Tesseract must be compiled with OpenCL support
+- OpenCL drivers must be installed for your GPU
+- Compatible GPU hardware (NVIDIA, AMD, or Intel)
+
+This will pass the `--opencl 1` flag to `lstmtraining`, enabling GPU acceleration for faster training times.
 
 ### Change directory assumptions
 
