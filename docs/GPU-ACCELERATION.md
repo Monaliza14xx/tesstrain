@@ -398,4 +398,4 @@ For GPU-related improvements:
 1. Test on multiple GPU vendors (NVIDIA, AMD, Intel)
 2. Benchmark performance changes
 3. Document hardware-specific issues
-4. Submit issues to [Tesseract GitHub](https://github.com/tesseract-ocr/tesseract/issues)
+4. Submit GPU-related issues to [Tesseract GitHub](https://github.com/tesseract-ocr/tesseract/issues) (main OCR engine)

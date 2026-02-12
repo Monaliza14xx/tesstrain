@@ -208,4 +208,4 @@ For more detailed information:
 If you encounter issues:
 1. Check the troubleshooting section above
 2. Review [GPU-ACCELERATION.md](GPU-ACCELERATION.md) for detailed solutions
-3. Open an issue on [GitHub](https://github.com/tesseract-ocr/tesseract/issues)
+3. Open GPU-related issues on [Tesseract GitHub](https://github.com/tesseract-ocr/tesseract/issues) or tesstrain issues on [tesstrain GitHub](https://github.com/Monaliza14xx/tesstrain/issues)
