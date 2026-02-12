@@ -38,7 +38,7 @@ Tesstrain now supports hardware acceleration for training Tesseract LSTM models:
 
 #### Software Requirements
 1. **Tesseract** built with OpenCL support
-   - Compile flag: `-DENABLE_OPENCL=ON` or `-DOPENMP_BUILD=ON`
+   - Compile flag: `-DENABLE_OPENCL=ON`
    
 2. **OpenCL Runtime** for your GPU vendor:
    - **NVIDIA**: CUDA Toolkit (includes OpenCL)

@@ -137,8 +137,12 @@ LOG_FILE = $(OUTPUT_DIR)/training.log
 
 # Build acceleration flags for lstmtraining
 LSTM_ACCEL_FLAGS :=
+# Add OpenMP thread count if specified (non-zero and non-empty)
+# A value of 0 means auto-detect, so we don't pass the flag
 ifneq ($(OPENMP_THREAD_COUNT),0)
+ifneq ($(OPENMP_THREAD_COUNT),)
 	LSTM_ACCEL_FLAGS += --openmp_thread_count $(OPENMP_THREAD_COUNT)
+endif
 endif
 
 # Set OpenCL environment if enabled
