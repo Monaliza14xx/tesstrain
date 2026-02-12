@@ -79,21 +79,18 @@ ax1.scatter(t, y, c='teal', alpha=0.7, s=0.5, label='BCER at #iterations/100 - l
 ax1.plot(t, y, 'teal', alpha=0.3, linewidth=0.5, label='Training BCER')
 ax1.grid(True)
 
-# Check for non-NaN values more efficiently using numpy
-c_valid = ~np.isnan(c).all()
-if c_valid:
+# Check for non-NaN values efficiently using numpy
+if not np.isnan(c).all():
     ax1.scatter(ct, c, c='teal', marker='x', s=35,
        label='BCER at checkpoints - lstmtraining - list.train', alpha=0.5)
     annot_min('teal',0,-50,cx,c,ct)
 
-l_valid = ~np.isnan(l).all()
-if l_valid:
+if not np.isnan(l).all():
     ax1.plot(lt, l, 'magenta', linewidth=0.5, label='Validation BCER')
     ax1.scatter(lt, l, c='magenta', s=10, label='BCER at checkpoints - lstmeval - list.eval', alpha=0.5)
     annot_min('magenta',0,-50,lx,l,lt)
 
-s_valid = ~np.isnan(s).all()
-if s_valid:
+if not np.isnan(s).all():
     ax1.plot(st, s, 'orange', linewidth=0.5, label='SubTrainer BCER')
     ax1.scatter(st, s, c='orange', s=0.5,
        label='BCER for UpdateSubtrainer every 100 iterations', alpha=0.5)

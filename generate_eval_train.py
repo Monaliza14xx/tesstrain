@@ -32,13 +32,15 @@ def split_file(input_file, ratio):
         for idx, line in enumerate(fin):
             line = line.rstrip('\n')
             if idx < split_point:
-                f1.write(line)
-                if idx < line_count - 1:  # Add newline for all but the last line of the entire file
+                # Write to train file
+                if idx > 0:  # Add newline before all lines except the first
                     f1.write('\n')
+                f1.write(line)
             else:
-                f2.write(line)
-                if idx < line_count - 1:  # Add newline for all but the last line of the entire file
+                # Write to eval file
+                if idx > split_point:  # Add newline before all lines except the first in eval
                     f2.write('\n')
+                f2.write(line)
     return True
 
 
