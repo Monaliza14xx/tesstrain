@@ -12,9 +12,11 @@
     * [Choose the model name](#choose-the-model-name)
     * [Provide ground truth data](#provide-ground-truth-data)
     * [Train](#train)
+    * [GPU Acceleration](#gpu-acceleration-via-opencl)
     * [Change directory assumptions](#change-directory-assumptions)
     * [Make model files (traineddata)](#make-model-files-traineddata)
     * [Plotting CER](#plotting-cer)
+* [Advanced Documentation](#advanced-documentation)
 * [License](#license)
 
 ## Installation
@@ -241,6 +243,24 @@ training and generate the plots:
 Which should then look like this:
 
 ![ocrd.plot_cer.png](./ocrd.plot_cer.png)
+
+## Advanced Documentation
+
+For deep technical analysis and GPU acceleration details:
+
+- **[GPU Acceleration Guide](docs/GPU-ACCELERATION.md)**: Comprehensive guide to OpenCL GPU acceleration, including:
+  - Performance optimization and benchmarking
+  - Troubleshooting common GPU issues
+  - Multi-GPU training strategies
+  - Advanced configuration options
+
+- **[Tesseract Internals](docs/TESSERACT-INTERNALS.md)**: Reverse engineering documentation covering:
+  - LSTM neural network architecture
+  - OpenCL integration and GPU kernels
+  - Source code analysis
+  - How to extend GPU support
+
+These guides provide in-depth technical information for developers working with GPU acceleration or wanting to understand Tesseract's internal architecture.
 
 ## License
 
