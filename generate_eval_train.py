@@ -33,11 +33,11 @@ def split_file(input_file, ratio):
             line = line.rstrip('\n')
             if idx < split_point:
                 f1.write(line)
-                if idx < split_point - 1:
+                if idx < line_count - 1:  # Add newline for all but the last line of the entire file
                     f1.write('\n')
             else:
                 f2.write(line)
-                if idx < line_count - 1:
+                if idx < line_count - 1:  # Add newline for all but the last line of the entire file
                     f2.write('\n')
     return True
 

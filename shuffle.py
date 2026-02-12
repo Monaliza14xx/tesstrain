@@ -15,7 +15,6 @@
 
 import random
 import sys
-import os
 
 # If at least one argument was given, the first argument is used as the seed.
 if len(sys.argv) > 1:
