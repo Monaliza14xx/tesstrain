@@ -61,7 +61,6 @@ PlotTitle="Tesseract LSTM Training : " + modelname
 fig = plt.figure(figsize=(11,8.5)) #size is in inches
 ax1 = fig.add_subplot()
 
-ax1.yaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
 ax1.yaxis.set_major_formatter(matplotlib.ticker.FormatStrFormatter("%.1f"))
 ax1.set_ylabel('Error Rate %')
 
@@ -69,7 +68,6 @@ ax1.set_xlabel('Learning Iterations')
 ax1.set_xticks(x)
 ax1.tick_params(axis='x', labelsize='small')
 ax1.locator_params(axis='x', nbins=maxticks)  # limit ticks on x-axis
-ax1.xaxis.set_major_formatter(matplotlib.ticker.ScalarFormatter())
 ax1.xaxis.set_major_formatter(matplotlib.ticker.StrMethodFormatter('{x:,.0f}'))
 
 ax1.scatter(x, y, c='teal', alpha=0.7, s=0.5, label='BCER at #iterations/100 - lstmtraining - list.train')

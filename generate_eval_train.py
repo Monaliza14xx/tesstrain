@@ -12,20 +12,34 @@ def split_file(input_file, ratio):
     if not isinstance(input_file, pathlib.Path):
         input_file = pathlib.Path(input_file)
     if not input_file.exists():
-        print(f"'{input_file}' not exists!")
+        print(f"Error: '{input_file}' does not exist!")
         return False
-    lines = input_file.read_text().splitlines()
+    
+    try:
+        lines = input_file.read_text().splitlines()
+    except (IOError, OSError) as e:
+        print(f"Error reading file '{input_file}': {e}")
+        return False
+
+    if not lines:
+        print(f"Warning: '{input_file}' is empty!")
+        return False
 
     split_point = int(ratio * len(lines))
     output_dir = input_file.resolve().parent
     train_list = pathlib.Path(output_dir, 'list.train')
     eval_list = pathlib.Path(output_dir, 'list.eval')
 
-    with open(train_list, 'w', newline='\n') as f1, open(
-        eval_list, 'w', newline='\n'
-    ) as f2:
-        f1.write('\n'.join(lines[:split_point]))
-        f2.write('\n'.join(lines[split_point:]))
+    try:
+        with open(train_list, 'w', newline='\n') as f1, open(
+            eval_list, 'w', newline='\n'
+        ) as f2:
+            f1.write('\n'.join(lines[:split_point]))
+            f2.write('\n'.join(lines[split_point:]))
+    except (IOError, OSError) as e:
+        print(f"Error writing output files: {e}")
+        return False
+    
     return True
 
 

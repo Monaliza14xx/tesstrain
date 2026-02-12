@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import collections
 import getopt
 import sys
 import unicodedata
@@ -36,23 +37,18 @@ def main(argv):
     for arg in args:
         txt_file = arg
 
-    inFile = open(txt_file)
-    rawText = inFile.read()
-    inFile.close()
+    with open(txt_file) as inFile:
+        rawText = inFile.read()
 
-    chars = {}
-    for char in rawText:
-        if char not in chars:
-            chars[char] = 1
-        else:
-            chars[char] += 1
+    # Use Counter for efficient character counting
+    chars = collections.Counter(rawText)
 
-    keys = list(chars.keys())
-    keys.sort()
-    for char in keys:
+    # Sort by character and print
+    for char in sorted(chars.keys()):
         try:
             print(chars[char], '\t', char, '\t', unicodedata.name(char))
-        except:
+        except ValueError:
+            # Character doesn't have a Unicode name
             pass
 
 

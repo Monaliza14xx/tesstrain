@@ -21,12 +21,12 @@ if len(sys.argv) > 1:
     random.seed(sys.argv[1])
 
 if len(sys.argv) > 2:
-    fd0 = open(sys.argv[2], 'r')
+    # Read from file
+    with open(sys.argv[2], 'r') as fd0:
+        lines = fd0.readlines()
 else:
-    fd0 = sys.stdin
-
-# Read lines from standard input.
-lines = fd0.readlines()
+    # Read from stdin
+    lines = sys.stdin.readlines()
 
 # First sort the input lines (directory entries may come in undefined order).
 lines.sort()
@@ -35,9 +35,9 @@ lines.sort()
 random.shuffle(lines)
 
 if len(sys.argv) > 2:
-    fd1 = open(sys.argv[2], 'w')
+    # Write to file
+    with open(sys.argv[2], 'w') as fd1:
+        fd1.writelines(lines)
 else:
-    fd1 = sys.stdout
-
-# Write the shuffled lines to standard output.
-fd1.writelines(lines)
+    # Write to stdout
+    sys.stdout.writelines(lines)
