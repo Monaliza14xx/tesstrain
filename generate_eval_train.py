@@ -32,9 +32,13 @@ def split_file(input_file, ratio):
         for idx, line in enumerate(fin):
             line = line.rstrip('\n')
             if idx < split_point:
-                f1.write(line + '\n' if idx < split_point - 1 else line)
+                f1.write(line)
+                if idx < split_point - 1:
+                    f1.write('\n')
             else:
-                f2.write(line + '\n' if idx < line_count - 1 else line)
+                f2.write(line)
+                if idx < line_count - 1:
+                    f2.write('\n')
     return True
 
 

@@ -99,6 +99,13 @@ which is a shortcut for
 
     make unicharset lists proto-model tesseract-langdata training MODEL_NAME=name-of-the-resulting-model
 
+#### Performance Optimization
+
+For faster training data preparation, use parallel execution to process multiple files simultaneously:
+
+    make -j$(nproc) training MODEL_NAME=name-of-the-resulting-model
+
+This utilizes all available CPU cores to parallelize the generation of `.box` and `.lstmf` files, which can significantly reduce preparation time for large datasets.
 
 Run `make help` to see all the possible targets and variables:
 

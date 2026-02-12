@@ -71,8 +71,9 @@ def splitclusters(s):
         yield cluster
 
 
-# Get image size.
-width, height = Image.open(args.image).size
+# Get image size - use context manager to ensure file is closed
+with Image.open(args.image) as img:
+    width, height = img.size
 
 # load gt
 with io.open(args.txt, 'r', encoding='utf-8') as f:
