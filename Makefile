@@ -116,6 +116,16 @@ RATIO_TRAIN := 0.90
 # Default Target Error Rate. Default: $(TARGET_ERROR_RATE)
 TARGET_ERROR_RATE := 0.01
 
+# GPU/CPU Acceleration Settings
+# Number of OpenMP threads for CPU parallelization. Default: 0 (auto-detect)
+# Set to specific number (e.g., 4, 8) to limit CPU threads used during training
+OPENMP_THREAD_COUNT := 0
+
+# Enable OpenCL for GPU acceleration. Default: empty (disabled)
+# Set to 'yes' or '1' to enable OpenCL if Tesseract was built with OpenCL support
+# Requires: Tesseract built with OpenCL, and OpenCL runtime installed
+USE_OPENCL :=
+
 # Use current Python program name on Windows
 ifeq ($(OS),Windows_NT)
     PY_CMD := python
@@ -124,6 +134,19 @@ else
 endif
 
 LOG_FILE = $(OUTPUT_DIR)/training.log
+
+# Build acceleration flags for lstmtraining
+LSTM_ACCEL_FLAGS :=
+ifneq ($(OPENMP_THREAD_COUNT),0)
+	LSTM_ACCEL_FLAGS += --openmp_thread_count $(OPENMP_THREAD_COUNT)
+endif
+
+# Set OpenCL environment if enabled
+ifeq ($(USE_OPENCL),yes)
+	export OPENCL_ENABLED=1
+else ifeq ($(USE_OPENCL),1)
+	export OPENCL_ENABLED=1
+endif
 
 # BEGIN-EVAL makefile-parser --make-help Makefile
 
@@ -171,6 +194,13 @@ help:
 	@echo "    RATIO_TRAIN        Ratio of train / eval training data. Default: $(RATIO_TRAIN)"
 	@echo "    TARGET_ERROR_RATE  Default Target Error Rate. Default: $(TARGET_ERROR_RATE)"
 	@echo "    LOG_FILE           File to copy training output to and read plot figures from. Default: $(LOG_FILE)"
+	@echo ""
+	@echo "  GPU/CPU Acceleration"
+	@echo ""
+	@echo "    OPENMP_THREAD_COUNT  Number of OpenMP threads for CPU parallelization. Default: $(OPENMP_THREAD_COUNT) (auto)"
+	@echo "                         Set to specific number (e.g., 4, 8) to limit CPU threads"
+	@echo "    USE_OPENCL           Enable OpenCL for GPU acceleration. Default: $(USE_OPENCL) (disabled)"
+	@echo "                         Set to 'yes' or '1' to enable (requires OpenCL-enabled Tesseract)"
 
 # END-EVAL
 
@@ -279,6 +309,7 @@ $(OUTPUT_DIR)/tessdata_best/%.traineddata: $(OUTPUT_DIR)/checkpoints/%.checkpoin
           --stop_training \
           --continue_from $< \
           --traineddata $(PROTO_MODEL) \
+          $(LSTM_ACCEL_FLAGS) \
           --model_output $@
 $(OUTPUT_DIR)/tessdata_fast/%.traineddata: $(OUTPUT_DIR)/checkpoints/%.checkpoint | $(OUTPUT_DIR)/tessdata_fast
 	lstmtraining \
@@ -286,6 +317,7 @@ $(OUTPUT_DIR)/tessdata_fast/%.traineddata: $(OUTPUT_DIR)/checkpoints/%.checkpoin
           --continue_from $< \
           --traineddata $(PROTO_MODEL) \
           --convert_to_int \
+          $(LSTM_ACCEL_FLAGS) \
           --model_output $@
 
 # Build the proto model
@@ -325,6 +357,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	  --eval_listfile $(OUTPUT_DIR)/list.eval \
 	  --max_iterations $(MAX_ITERATIONS) \
 	  --target_error_rate $(TARGET_ERROR_RATE) \
+	  $(LSTM_ACCEL_FLAGS) \
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
@@ -347,6 +380,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	  --eval_listfile $(OUTPUT_DIR)/list.eval \
 	  --max_iterations $(MAX_ITERATIONS) \
 	  --target_error_rate $(TARGET_ERROR_RATE) \
+	  $(LSTM_ACCEL_FLAGS) \
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo

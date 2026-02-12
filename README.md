@@ -107,6 +107,47 @@ For faster training data preparation, use parallel execution to process multiple
 
 This utilizes all available CPU cores to parallelize the generation of `.box` and `.lstmf` files, which can significantly reduce preparation time for large datasets.
 
+#### GPU/CPU Acceleration
+
+Tesseract training can be accelerated using OpenMP (CPU parallelization) and OpenCL (GPU acceleration).
+
+**Check Acceleration Availability:**
+
+    ./check_acceleration.sh
+
+**CPU Parallelization (OpenMP):**
+
+Set the number of CPU threads to use during training:
+
+    make training MODEL_NAME=mymodel OPENMP_THREAD_COUNT=8
+
+Use `$(nproc)` to automatically use all available CPU cores:
+
+    make training MODEL_NAME=mymodel OPENMP_THREAD_COUNT=$(nproc)
+
+**GPU Acceleration (OpenCL):**
+
+If Tesseract was built with OpenCL support and you have OpenCL-capable hardware:
+
+    make training MODEL_NAME=mymodel USE_OPENCL=yes
+
+**Combined CPU and GPU:**
+
+    make training MODEL_NAME=mymodel OPENMP_THREAD_COUNT=8 USE_OPENCL=yes
+
+**Requirements for GPU Acceleration:**
+- Tesseract must be compiled with OpenCL support
+- OpenCL runtime installed for your GPU:
+  - **NVIDIA**: CUDA Toolkit (includes OpenCL)
+  - **AMD**: ROCm or AMD APP SDK
+  - **Intel**: Intel OpenCL Runtime
+- OpenCL-capable GPU (NVIDIA, AMD, or Intel)
+
+**Troubleshooting:**
+- Run `./check_acceleration.sh` to diagnose acceleration capabilities
+- Check if lstmtraining is linked with OpenCL: `ldd $(which lstmtraining) | grep OpenCL`
+- Verify OpenCL devices are available: `clinfo` (install with `sudo apt-get install clinfo`)
+
 Run `make help` to see all the possible targets and variables:
 
 <!-- BEGIN-EVAL -w '```' '```' -- make help -->
