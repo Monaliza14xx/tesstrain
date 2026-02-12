@@ -12,6 +12,7 @@
     * [Choose the model name](#choose-the-model-name)
     * [Provide ground truth data](#provide-ground-truth-data)
     * [Train](#train)
+    * [GPU/CPU Acceleration](#gpucpu-acceleration)
     * [Change directory assumptions](#change-directory-assumptions)
     * [Make model files (traineddata)](#make-model-files-traineddata)
     * [Plotting CER](#plotting-cer)
@@ -147,6 +148,8 @@ If Tesseract was built with OpenCL support and you have OpenCL-capable hardware:
 - Run `./check_acceleration.sh` to diagnose acceleration capabilities
 - Check if lstmtraining is linked with OpenCL: `ldd $(which lstmtraining) | grep OpenCL`
 - Verify OpenCL devices are available: `clinfo` (install with `sudo apt-get install clinfo`)
+
+**For detailed information**, see the comprehensive [GPU Acceleration Guide](GPU_ACCELERATION.md).
 
 Run `make help` to see all the possible targets and variables:
 
