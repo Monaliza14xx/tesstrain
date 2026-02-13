@@ -294,8 +294,36 @@ For comprehensive information on:
 - GPU/CPU optimization strategies
 - Performance tuning and benchmarks
 - Troubleshooting
+- Advanced training parameters
 
 See the [CUDA and Performance Optimization Guide](./CUDA_OPTIMIZATION.md).
+
+### GPU Performance Validation
+
+Use the provided validation script to check your GPU setup:
+
+```bash
+./src/validate_gpu.sh
+```
+
+This will:
+- Check GPU availability and drivers
+- Verify OpenCL support
+- Recommend optimal GPU_MAX_MEMORY for your GPU
+- Show current GPU utilization
+
+### Monitoring GPU Usage
+
+While training, monitor GPU in another terminal:
+
+```bash
+watch -n 1 nvidia-smi
+```
+
+Look for:
+- GPU utilization: 70-100% (good)
+- Memory usage matching GPU_MAX_MEMORY setting
+- Process `lstmtraining` listed under GPU processes
 
 ## License
 
