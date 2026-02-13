@@ -28,20 +28,31 @@ To use GPU acceleration, you need Tesseract compiled with CUDA support. See [Bui
 
 ### Environment Variables
 
+The training workflow uses the following environment variables to enable GPU acceleration:
+
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `USE_GPU` | 0 | Enable GPU acceleration (set to 1 to enable) |
 | `GPU_DEVICE` | 0 | GPU device ID for multi-GPU systems |
 | `CUDA_VISIBLE_DEVICES` | Auto-set | Controls which GPUs are visible to the training process |
+| `TESSERACT_OPENCL_DEVICE` | Auto-set | Tells Tesseract which OpenCL device to use (format: GPU:N) |
+
+**Important**: When `USE_GPU=1`, the workflow automatically sets:
+- `CUDA_VISIBLE_DEVICES=$(GPU_DEVICE)` - Makes only the specified GPU visible
+- `TESSERACT_OPENCL_DEVICE=GPU:$(GPU_DEVICE)` - Tells Tesseract to use the GPU
+- `OMP_THREAD_LIMIT=1` - Prevents CPU multi-threading fallback
 
 ### Basic GPU Usage
 
 **Important**: When `USE_GPU=1` is set, the training workflow **forces GPU-only mode** by:
 - Setting `OMP_THREAD_LIMIT=1` to prevent CPU fallback
 - Setting `CUDA_VISIBLE_DEVICES` to the specified GPU device
+- Setting `TESSERACT_OPENCL_DEVICE=GPU:N` to tell Tesseract to use the GPU (OpenCL acceleration)
 - Limiting OpenMP to 1 thread to ensure GPU is used exclusively
 
 This ensures training runs exclusively on GPU. If the GPU is unavailable, training will fail rather than fall back to CPU. This is intentional to guarantee you're getting GPU performance.
+
+**Note**: Tesseract uses OpenCL for GPU acceleration. The `TESSERACT_OPENCL_DEVICE` environment variable is critical - it tells Tesseract which device to use. Without it, Tesseract may default to CPU even with GPU available.
 
 ```bash
 # Train with GPU acceleration (GPU-only mode, no CPU fallback)
@@ -108,28 +119,46 @@ make training MODEL_NAME=mymodel \
   MAX_ITERATIONS=50000
 ```
 
-## Building Tesseract with CUDA
+## Building Tesseract with GPU Support
 
-### Option 1: Build from Source with CUDA
+### Important Note: OpenCL vs CUDA
 
-To enable CUDA support in Tesseract, you need to build it from source with specific flags:
+**Tesseract uses OpenCL for GPU acceleration, not CUDA directly.** While CUDA is NVIDIA's proprietary framework, OpenCL is an open standard that works with NVIDIA, AMD, and Intel GPUs.
+
+When we refer to "CUDA support" in this guide, we mean GPU acceleration through OpenCL, which can run on CUDA-compatible NVIDIA GPUs.
+
+### Option 1: Build from Source with OpenCL Support
+
+To enable GPU acceleration in Tesseract:
 
 ```bash
-# Install CUDA toolkit first (version 11.0 or later recommended)
-# Ubuntu/Debian:
-sudo apt-get install nvidia-cuda-toolkit
+# Install OpenCL development files
+# For NVIDIA GPUs:
+sudo apt-get install nvidia-opencl-dev ocl-icd-opencl-dev
+
+# For AMD GPUs:
+sudo apt-get install mesa-opencl-icd ocl-icd-opencl-dev
 
 # Clone Tesseract repository
 git clone https://github.com/tesseract-ocr/tesseract.git
 cd tesseract
 
-# Configure with CUDA support
+# Configure with OpenCL support
 ./autogen.sh
-./configure --enable-cuda
+./configure --enable-opencl
 
 # Build and install
 make -j$(nproc)
 sudo make install
+```
+
+### Option 2: Build with Legacy CUDA Support (Deprecated)
+
+Note: Direct CUDA support (--enable-cuda) is deprecated. Use OpenCL instead:
+
+```bash
+# This is for reference only - OpenCL is recommended
+./configure --enable-cuda
 ```
 
 ### Option 2: Using Pre-built CUDA-enabled Tesseract
@@ -138,15 +167,59 @@ Some distributions provide CUDA-enabled builds. Check your package manager or Te
 
 ### Verify CUDA Support
 
-After building, verify CUDA support:
+After building, verify CUDA/OpenCL support:
 
 ```bash
-# Check if CUDA is available
-lstmtraining --help | grep -i cuda
+# Check if OpenCL is available in Tesseract
+lstmtraining --help 2>&1 | grep -i opencl
 
-# Test GPU acceleration
-CUDA_VISIBLE_DEVICES=0 lstmtraining --version
+# Check available OpenCL devices
+clinfo
+
+# Test GPU is accessible
+nvidia-smi
+
+# Verify GPU is being used during training
+# In one terminal, start training:
+make training MODEL_NAME=test USE_GPU=1
+
+# In another terminal, monitor GPU usage:
+watch -n 1 nvidia-smi
+# You should see GPU utilization increase and memory usage grow
 ```
+
+### Troubleshooting GPU Detection
+
+If training still uses CPU despite `USE_GPU=1`:
+
+1. **Check OpenCL Support in Tesseract**:
+   ```bash
+   # lstmtraining should mention OpenCL if compiled with support
+   lstmtraining --help 2>&1 | head -20
+   ```
+
+2. **List Available OpenCL Devices**:
+   ```bash
+   # Install clinfo if not available
+   sudo apt-get install clinfo
+   clinfo
+   ```
+
+3. **Check Environment Variables Are Set**:
+   Look for these in the training output:
+   - `CUDA_VISIBLE_DEVICES=0`
+   - `TESSERACT_OPENCL_DEVICE=GPU:0`
+   - `OMP_THREAD_LIMIT=1`
+
+4. **Monitor GPU Usage**:
+   ```bash
+   # Run this while training is active
+   nvidia-smi
+   # Look for:
+   # - GPU utilization > 0%
+   # - Memory usage increasing
+   # - Process 'lstmtraining' listed
+   ```
 
 ## Usage Examples
 
@@ -203,18 +276,28 @@ wait
 
 **Problem**: Training configuration shows "GPU ENABLED" but training still uses CPU
 
-**Solution**: As of the latest update, `USE_GPU=1` now **forces GPU-only mode**:
-- Sets `OMP_THREAD_LIMIT=1` to prevent CPU multi-threading fallback
-- Sets `CUDA_VISIBLE_DEVICES` to expose only the specified GPU
-- OpenMP threads limited to 1 to ensure GPU is used
+**Root Cause**: The `TESSERACT_OPENCL_DEVICE` environment variable was missing. Without this variable, Tesseract doesn't know which GPU device to use, even if CUDA_VISIBLE_DEVICES is set.
 
-If training still doesn't use GPU, check:
-1. Verify Tesseract is built with CUDA/OpenCL support: `lstmtraining --help`
-2. Check CUDA installation: `nvidia-smi`
-3. Ensure GPU drivers are up to date
-4. Check that GPU has available memory: `nvidia-smi`
+**Solution**: As of the latest update, `USE_GPU=1` now **automatically sets all required environment variables**:
+- `OMP_THREAD_LIMIT=1` - Prevents CPU multi-threading fallback
+- `CUDA_VISIBLE_DEVICES=$(GPU_DEVICE)` - Makes GPU visible to CUDA runtime
+- `TESSERACT_OPENCL_DEVICE=GPU:$(GPU_DEVICE)` - **Critical**: Tells Tesseract which GPU to use
 
-**Note**: With GPU-only mode, training will fail if GPU is not available (no CPU fallback). This is intentional to ensure you get GPU performance.
+**Verify GPU is being used**:
+1. Check training output includes all three environment variables
+2. Run `nvidia-smi` in another terminal during training
+3. Look for GPU utilization > 0% and increasing memory usage
+4. Verify `lstmtraining` process is listed in GPU processes
+
+**Example corrected command**:
+```bash
+OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=0 TESSERACT_OPENCL_DEVICE=GPU:0 \
+lstmtraining \
+  --traineddata model.traineddata \
+  --train_listfile list.train \
+  --eval_listfile list.eval \
+  --max_iterations 10000
+```
 
 ### GPU Not Detected
 

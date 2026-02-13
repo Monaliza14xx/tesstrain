@@ -231,13 +231,14 @@ Which should then look like this:
 
 ## Performance Optimization
 
-The training workflow now supports GPU acceleration (CUDA) and CPU parallelization (OpenMP) for significantly faster training.
+The training workflow now supports GPU acceleration (OpenCL) and CPU parallelization (OpenMP) for significantly faster training.
 
 ### Quick Start
 
 ```bash
 # Train with GPU acceleration (GPU-only mode, no CPU fallback)
-# Requires CUDA-enabled Tesseract build
+# Requires Tesseract built with OpenCL support
+# Sets TESSERACT_OPENCL_DEVICE=GPU:0 to force GPU usage
 make training MODEL_NAME=mymodel USE_GPU=1
 
 # Train with CPU multi-threading (works with any Tesseract build)
@@ -247,6 +248,16 @@ make training MODEL_NAME=mymodel OMP_NUM_THREADS=8
 # To use CPU multi-threading (without GPU mode):
 make training MODEL_NAME=mymodel USE_GPU=0 OMP_NUM_THREADS=8
 ```
+
+### How GPU Acceleration Works
+
+When `USE_GPU=1` is set, the workflow automatically configures three critical environment variables:
+
+1. **TESSERACT_OPENCL_DEVICE=GPU:N** - Tells Tesseract which GPU to use (most critical!)
+2. **CUDA_VISIBLE_DEVICES=N** - Makes the specified GPU visible to CUDA runtime
+3. **OMP_THREAD_LIMIT=1** - Prevents CPU multi-threading fallback
+
+Without `TESSERACT_OPENCL_DEVICE`, Tesseract will default to CPU even if a GPU is available.
 
 ### Available Optimization Variables
 

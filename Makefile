@@ -283,14 +283,14 @@ traineddata: $(FASTMODEL_FILES)
 $(OUTPUT_DIR)/tessdata_best $(OUTPUT_DIR)/tessdata_fast $(OUTPUT_DIR)/eval:
 	@mkdir -p $@
 $(OUTPUT_DIR)/tessdata_best/%.traineddata: $(OUTPUT_DIR)/checkpoints/%.checkpoint | $(OUTPUT_DIR)/tessdata_best
-	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
+	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE) TESSERACT_OPENCL_DEVICE=GPU:$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
           --stop_training \
           --continue_from $< \
           --traineddata $(PROTO_MODEL) \
           --model_output $@
 $(OUTPUT_DIR)/tessdata_fast/%.traineddata: $(OUTPUT_DIR)/checkpoints/%.checkpoint | $(OUTPUT_DIR)/tessdata_fast
-	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
+	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE) TESSERACT_OPENCL_DEVICE=GPU:$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
           --stop_training \
           --continue_from $< \
@@ -331,7 +331,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@echo "Max Iterations: $(MAX_ITERATIONS)"
 	@echo "=============================="
 	@echo
-	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
+	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE) TESSERACT_OPENCL_DEVICE=GPU:$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
 	  --debug_interval $(DEBUG_INTERVAL) \
 	  --traineddata $(PROTO_MODEL) \
@@ -346,7 +346,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
-	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
+	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE) TESSERACT_OPENCL_DEVICE=GPU:$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
 	--stop_training \
 	--continue_from $(LAST_CHECKPOINT) \
@@ -363,7 +363,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@echo "Max Iterations: $(MAX_ITERATIONS)"
 	@echo "=============================="
 	@echo
-	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
+	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE) TESSERACT_OPENCL_DEVICE=GPU:$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
 	  --debug_interval $(DEBUG_INTERVAL) \
 	  --traineddata $(PROTO_MODEL) \
@@ -377,7 +377,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
-	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
+	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE) TESSERACT_OPENCL_DEVICE=GPU:$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
 	--stop_training \
 	--continue_from $(LAST_CHECKPOINT) \
