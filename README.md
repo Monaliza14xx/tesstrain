@@ -241,6 +241,9 @@ The training workflow now supports GPU acceleration (OpenCL) and CPU paralleliza
 # Sets TESSERACT_OPENCL_DEVICE=GPU:0 to force GPU usage
 make training MODEL_NAME=mymodel USE_GPU=1
 
+# T4 GPU optimized training (16GB VRAM)
+make training MODEL_NAME=mymodel USE_GPU=1 GPU_MAX_MEMORY=14000 NET_MODE=1
+
 # Train with CPU multi-threading (works with any Tesseract build)
 make training MODEL_NAME=mymodel OMP_NUM_THREADS=8
 
@@ -257,6 +260,10 @@ When `USE_GPU=1` is set, the workflow automatically configures three critical en
 2. **CUDA_VISIBLE_DEVICES=N** - Makes the specified GPU visible to CUDA runtime
 3. **OMP_THREAD_LIMIT=1** - Prevents CPU multi-threading fallback
 
+Additionally, GPU optimization parameters are set:
+- **--max_image_MB** - Limits GPU memory usage to prevent OOM errors
+- **--net_mode** - Controls LSTM network mode (parallel=fast, serial=memory-efficient)
+
 Without `TESSERACT_OPENCL_DEVICE`, Tesseract will default to CPU even if a GPU is available.
 
 ### Available Optimization Variables
@@ -266,6 +273,9 @@ Without `TESSERACT_OPENCL_DEVICE`, Tesseract will default to CPU even if a GPU i
 | `USE_GPU` | 0 | Enable GPU-only mode (forces GPU, prevents CPU fallback) |
 | `GPU_DEVICE` | 0 | GPU device ID for multi-GPU systems |
 | `OMP_NUM_THREADS` | Auto | Number of OpenMP threads (ignored when USE_GPU=1) |
+| `GPU_MAX_MEMORY` | 12000 | Max GPU memory in MB (T4 16GB: use 12000-14000) |
+| `NET_MODE` | 1 | LSTM mode: 0=serial (less memory), 1=parallel (faster) |
+| `APPEND_INDEX` | -1 | Multi-GPU index: -1=auto, 0+=specific |
 
 ### Detailed Guide
 

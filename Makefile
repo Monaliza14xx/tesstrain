@@ -79,6 +79,14 @@ GPU_DEVICE ?= 0
 # Number of OpenMP threads for CPU parallelization. Default: auto-detected or 4
 OMP_NUM_THREADS ?= $(shell nproc 2>/dev/null || echo 4)
 
+# GPU Optimization Parameters
+# Maximum GPU memory to use (in MB). For T4 GPU (16GB), recommended: 12000-14000. Default: $(GPU_MAX_MEMORY)
+GPU_MAX_MEMORY ?= 12000
+# Network mode for LSTM: 0=serial (slow, less memory), 1=parallel (fast, more memory). Default: $(NET_MODE)
+NET_MODE ?= 1
+# Append index for multi-GPU training (-1 for auto, 0+ for specific index). Default: $(APPEND_INDEX)
+APPEND_INDEX ?= -1
+
 TESSERACT_SCRIPTS := Arabic Armenian Bengali Bopomofo Canadian_Aboriginal Cherokee Cyrillic
 TESSERACT_SCRIPTS += Devanagari Ethiopic Georgian Greek Gujarati Gurmukhi
 TESSERACT_SCRIPTS += Hangul Han Hebrew Hiragana Kannada Katakana Khmer Lao Latin
@@ -179,6 +187,9 @@ help:
 	@echo "    USE_GPU            Enable GPU acceleration (requires CUDA-enabled Tesseract). Default: $(USE_GPU)"
 	@echo "    GPU_DEVICE         GPU device ID to use for training (multi-GPU systems). Default: $(GPU_DEVICE)"
 	@echo "    OMP_NUM_THREADS    Number of OpenMP threads for CPU parallelization. Default: $(OMP_NUM_THREADS)"
+	@echo "    GPU_MAX_MEMORY     Maximum GPU memory in MB (for T4: 12000-14000 recommended). Default: $(GPU_MAX_MEMORY)"
+	@echo "    NET_MODE           LSTM network mode: 0=serial (slower, less memory), 1=parallel (faster). Default: $(NET_MODE)"
+	@echo "    APPEND_INDEX       Multi-GPU training index (-1=auto, 0+=specific). Default: $(APPEND_INDEX)"
 
 # END-EVAL
 
@@ -326,6 +337,8 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@echo
 	@echo "=== Training Configuration ==="
 	@echo "GPU Acceleration: $(if $(filter 1,$(USE_GPU)),ENABLED (Device $(GPU_DEVICE)) - FORCING GPU ONLY,DISABLED)"
+	@echo "$(if $(filter 1,$(USE_GPU)),GPU Max Memory: $(GPU_MAX_MEMORY) MB,)"
+	@echo "$(if $(filter 1,$(USE_GPU)),Network Mode: $(if $(filter 1,$(NET_MODE)),Parallel (Fast),Serial (Memory-efficient)),)"
 	@echo "OpenMP Threads: $(if $(filter 1,$(USE_GPU)),1 (GPU mode),$(OMP_NUM_THREADS))"
 	@echo "Learning Rate: $(LEARNING_RATE)"
 	@echo "Max Iterations: $(MAX_ITERATIONS)"
@@ -343,6 +356,9 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	  --eval_listfile $(OUTPUT_DIR)/list.eval \
 	  --max_iterations $(MAX_ITERATIONS) \
 	  --target_error_rate $(TARGET_ERROR_RATE) \
+	  $(if $(filter 1,$(USE_GPU)),--max_image_MB $(GPU_MAX_MEMORY),) \
+	  $(if $(filter 1,$(USE_GPU)),--net_mode $(NET_MODE),) \
+	  $(if $(and $(filter 1,$(USE_GPU)),$(filter-out -1,$(APPEND_INDEX))),--append_index $(APPEND_INDEX),) \
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
@@ -358,6 +374,8 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@echo
 	@echo "=== Training Configuration ==="
 	@echo "GPU Acceleration: $(if $(filter 1,$(USE_GPU)),ENABLED (Device $(GPU_DEVICE)) - FORCING GPU ONLY,DISABLED)"
+	@echo "$(if $(filter 1,$(USE_GPU)),GPU Max Memory: $(GPU_MAX_MEMORY) MB,)"
+	@echo "$(if $(filter 1,$(USE_GPU)),Network Mode: $(if $(filter 1,$(NET_MODE)),Parallel (Fast),Serial (Memory-efficient)),)"
 	@echo "OpenMP Threads: $(if $(filter 1,$(USE_GPU)),1 (GPU mode),$(OMP_NUM_THREADS))"
 	@echo "Learning Rate: $(LEARNING_RATE)"
 	@echo "Max Iterations: $(MAX_ITERATIONS)"
@@ -374,6 +392,9 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	  --eval_listfile $(OUTPUT_DIR)/list.eval \
 	  --max_iterations $(MAX_ITERATIONS) \
 	  --target_error_rate $(TARGET_ERROR_RATE) \
+	  $(if $(filter 1,$(USE_GPU)),--max_image_MB $(GPU_MAX_MEMORY),) \
+	  $(if $(filter 1,$(USE_GPU)),--net_mode $(NET_MODE),) \
+	  $(if $(and $(filter 1,$(USE_GPU)),$(filter-out -1,$(APPEND_INDEX))),--append_index $(APPEND_INDEX),) \
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo

@@ -37,10 +37,22 @@ The training workflow uses the following environment variables to enable GPU acc
 | `CUDA_VISIBLE_DEVICES` | Auto-set | Controls which GPUs are visible to the training process |
 | `TESSERACT_OPENCL_DEVICE` | Auto-set | Tells Tesseract which OpenCL device to use (format: GPU:N) |
 
+### GPU Optimization Parameters
+
+New parameters for optimizing GPU memory and performance:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `GPU_MAX_MEMORY` | 12000 | Maximum GPU memory in MB. For T4 (16GB): 12000-14000 recommended |
+| `NET_MODE` | 1 | LSTM network mode: 0=serial (slower, less memory), 1=parallel (faster, more memory) |
+| `APPEND_INDEX` | -1 | Multi-GPU training index: -1=auto, 0+=specific index |
+
 **Important**: When `USE_GPU=1`, the workflow automatically sets:
 - `CUDA_VISIBLE_DEVICES=$(GPU_DEVICE)` - Makes only the specified GPU visible
 - `TESSERACT_OPENCL_DEVICE=GPU:$(GPU_DEVICE)` - Tells Tesseract to use the GPU
 - `OMP_THREAD_LIMIT=1` - Prevents CPU multi-threading fallback
+- `--max_image_MB $(GPU_MAX_MEMORY)` - Limits GPU memory usage
+- `--net_mode $(NET_MODE)` - Sets LSTM network mode for performance
 
 ### Basic GPU Usage
 
@@ -63,7 +75,44 @@ make training MODEL_NAME=mymodel USE_GPU=1 GPU_DEVICE=1
 
 # Fine-tune with GPU (GPU-only mode)
 make training MODEL_NAME=mymodel START_MODEL=eng USE_GPU=1
+
+# Optimize for T4 GPU (16GB) - recommended settings
+make training MODEL_NAME=mymodel USE_GPU=1 GPU_MAX_MEMORY=14000 NET_MODE=1
+
+# Conservative T4 settings (if experiencing OOM errors)
+make training MODEL_NAME=mymodel USE_GPU=1 GPU_MAX_MEMORY=12000 NET_MODE=0
 ```
+
+### T4 GPU Optimization Guide
+
+NVIDIA T4 GPUs have 16GB of VRAM. Here are recommended settings:
+
+**Optimal Performance (T4 with 16GB)**:
+```bash
+make training MODEL_NAME=lao140k \
+  USE_GPU=1 \
+  GPU_MAX_MEMORY=14000 \
+  NET_MODE=1 \
+  START_MODEL=Lao \
+  LEARNING_RATE=0.0001 \
+  MAX_ITERATIONS=10000
+```
+
+**Memory-Constrained (if OOM errors occur)**:
+```bash
+make training MODEL_NAME=lao140k \
+  USE_GPU=1 \
+  GPU_MAX_MEMORY=12000 \
+  NET_MODE=0 \
+  START_MODEL=Lao \
+  LEARNING_RATE=0.0001 \
+  MAX_ITERATIONS=10000
+```
+
+**Parameter Explanation for T4**:
+- `GPU_MAX_MEMORY=14000`: Uses 14GB of T4's 16GB VRAM, leaving 2GB for system overhead
+- `NET_MODE=1`: Parallel mode - faster training, uses more memory
+- `NET_MODE=0`: Serial mode - slower training, uses less memory (if experiencing OOM)
 
 **Note**: If your Tesseract build doesn't have GPU support, training will fail rather than fall back to CPU. This is intentional to ensure you're getting the expected performance.
 
