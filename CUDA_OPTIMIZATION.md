@@ -18,8 +18,7 @@ The training workflow now supports several performance optimization options:
 
 - **GPU/CUDA acceleration**: For CUDA-enabled Tesseract builds
 - **OpenMP parallelization**: Multi-threaded CPU training
-- **Batch size tuning**: Memory vs. speed trade-offs
-- **Performance monitoring**: Track training efficiency
+- **Training parameter optimization**: Fine-tune learning rate, iterations, and checkpoints
 
 ## GPU/CUDA Support
 

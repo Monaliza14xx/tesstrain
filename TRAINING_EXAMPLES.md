@@ -167,9 +167,10 @@ make plot MODEL_NAME=mymodel
 # Create both best (float) and fast (int) models from all checkpoints
 make traineddata MODEL_NAME=mymodel
 
-# Create models from specific checkpoints only (using find instead of ls)
+# Create models from specific checkpoints only (using find)
+# Note: Ensure the checkpoints directory exists and contains .checkpoint files
 make traineddata MODEL_NAME=mymodel \
-  CHECKPOINT_FILES="$(find data/mymodel/checkpoints -name '*.checkpoint' -type f | sort -r | head -5)"
+  CHECKPOINT_FILES="$(find data/mymodel/checkpoints -name '*.checkpoint' -type f 2>/dev/null | sort -r | head -5)"
 ```
 
 ### 17. Evaluate Checkpoints
