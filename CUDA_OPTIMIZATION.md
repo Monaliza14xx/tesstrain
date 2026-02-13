@@ -73,23 +73,17 @@ make training MODEL_NAME=mymodel OMP_NUM_THREADS=4
 
 ## Performance Tuning
 
-### Batch Size
+## Performance Tuning
 
-Larger batch sizes can improve training speed but require more memory.
+### Training Parameters
+
+Optimize training performance using these parameters:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `BATCH_SIZE` | 100 | Training batch size |
-
-```bash
-# Increase batch size for faster training (requires more memory)
-make training MODEL_NAME=mymodel BATCH_SIZE=200
-
-# Reduce batch size for limited memory
-make training MODEL_NAME=mymodel BATCH_SIZE=50
-```
-
-### Other Performance Parameters
+| `MAX_ITERATIONS` | 10000 | Number of training iterations |
+| `DEBUG_INTERVAL` | 0 | Checkpoint save interval (0=only save best) |
+| `LEARNING_RATE` | 0.002 (scratch) / 0.0001 (fine-tune) | Training learning rate |
 
 ```bash
 # Combine optimizations for maximum performance
@@ -97,8 +91,8 @@ make training MODEL_NAME=mymodel \
   USE_GPU=1 \
   GPU_DEVICE=0 \
   OMP_NUM_THREADS=8 \
-  BATCH_SIZE=200 \
-  DEBUG_INTERVAL=1000
+  DEBUG_INTERVAL=1000 \
+  MAX_ITERATIONS=100000
 
 # Fine-tuning with optimizations
 make training MODEL_NAME=mymodel \
@@ -184,8 +178,8 @@ make training MODEL_NAME=mymodel \
 # Optimize for CPU-only systems
 make training MODEL_NAME=mymodel \
   OMP_NUM_THREADS=$(nproc) \
-  BATCH_SIZE=150 \
-  MAX_ITERATIONS=50000
+  MAX_ITERATIONS=50000 \
+  DEBUG_INTERVAL=1000
 ```
 
 ### Example 4: Multi-GPU System
@@ -214,10 +208,10 @@ wait
 **Problem**: Training crashes with CUDA out of memory
 
 **Solutions**:
-1. Reduce batch size: `BATCH_SIZE=50`
-2. Use a smaller GPU device if available
-3. Close other GPU applications
-4. Monitor GPU memory: `nvidia-smi`
+1. Reduce image resolution in ground truth data
+2. Close other GPU applications
+3. Monitor GPU memory: `nvidia-smi`
+4. Use a GPU with more VRAM
 
 ### Slow Training Performance
 
@@ -225,8 +219,8 @@ wait
 
 **Solutions**:
 1. Verify GPU is actually being used: `nvidia-smi` during training
-2. Increase batch size if memory allows: `BATCH_SIZE=200`
-3. Check DEBUG_INTERVAL isn't too frequent
+2. Enable GPU if available: `USE_GPU=1`
+3. Check DEBUG_INTERVAL isn't too frequent (use 1000-5000)
 4. Ensure data is on fast storage (SSD preferred)
 5. For CPU: Verify OMP_NUM_THREADS is set appropriately
 

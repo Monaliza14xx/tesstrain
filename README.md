@@ -243,7 +243,7 @@ make training MODEL_NAME=mymodel USE_GPU=1
 make training MODEL_NAME=mymodel OMP_NUM_THREADS=8
 
 # Combine optimizations for maximum performance
-make training MODEL_NAME=mymodel USE_GPU=1 OMP_NUM_THREADS=8 BATCH_SIZE=200
+make training MODEL_NAME=mymodel USE_GPU=1 OMP_NUM_THREADS=8
 ```
 
 ### Available Optimization Variables
@@ -253,7 +253,6 @@ make training MODEL_NAME=mymodel USE_GPU=1 OMP_NUM_THREADS=8 BATCH_SIZE=200
 | `USE_GPU` | 0 | Enable GPU acceleration (requires CUDA-enabled Tesseract) |
 | `GPU_DEVICE` | 0 | GPU device ID for multi-GPU systems |
 | `OMP_NUM_THREADS` | Auto | Number of OpenMP threads for CPU parallelization |
-| `BATCH_SIZE` | 100 | Training batch size (larger = faster, more memory) |
 
 ### Detailed Guide
 

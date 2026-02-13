@@ -76,13 +76,15 @@ NET_SPEC := [1,36,0,1 Ct3,3,16 Mp3,3 Lfys48 Lfx96 Lrx96 Lfx192 O1c\#\#\#]
 USE_GPU ?= 0
 # GPU device ID to use (for multi-GPU systems). Default: $(GPU_DEVICE)
 GPU_DEVICE ?= 0
-# Number of OpenMP threads for CPU parallelization. Default: $(OMP_NUM_THREADS)
+# Number of OpenMP threads for CPU parallelization. Default: auto-detected or 4
 OMP_NUM_THREADS ?= $(shell nproc 2>/dev/null || echo 4)
 
 # Performance Optimization Settings
 # Batch size for training (larger = faster but more memory). Default: $(BATCH_SIZE)
+# Note: Standard lstmtraining doesn't expose batch size parameter directly
 BATCH_SIZE ?= 100
 # Enable performance profiling. Default: $(PROFILE)
+# Note: Standard lstmtraining doesn't expose profiling parameter directly
 PROFILE ?= 0
 
 TESSERACT_SCRIPTS := Arabic Armenian Bengali Bopomofo Canadian_Aboriginal Cherokee Cyrillic
@@ -185,8 +187,6 @@ help:
 	@echo "    USE_GPU            Enable GPU acceleration (requires CUDA-enabled Tesseract). Default: $(USE_GPU)"
 	@echo "    GPU_DEVICE         GPU device ID to use for training (multi-GPU systems). Default: $(GPU_DEVICE)"
 	@echo "    OMP_NUM_THREADS    Number of OpenMP threads for CPU parallelization. Default: $(OMP_NUM_THREADS)"
-	@echo "    BATCH_SIZE         Batch size for training (larger = faster, more memory). Default: $(BATCH_SIZE)"
-	@echo "    PROFILE            Enable performance profiling during training. Default: $(PROFILE)"
 
 # END-EVAL
 
@@ -335,13 +335,12 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@echo "=== Training Configuration ==="
 	@echo "GPU Acceleration: $(if $(filter 1,$(USE_GPU)),ENABLED (Device $(GPU_DEVICE)),DISABLED)"
 	@echo "OpenMP Threads: $(OMP_NUM_THREADS)"
-	@echo "Batch Size: $(BATCH_SIZE)"
 	@echo "Learning Rate: $(LEARNING_RATE)"
 	@echo "Max Iterations: $(MAX_ITERATIONS)"
 	@echo "=============================="
 	@echo
 	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
-	CUDA_VISIBLE_DEVICES=$(if $(filter 1,$(USE_GPU)),$(GPU_DEVICE),-1) \
+	$(if $(filter 1,$(USE_GPU)),CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),) \
 	lstmtraining \
 	  --debug_interval $(DEBUG_INTERVAL) \
 	  --traineddata $(PROTO_MODEL) \
@@ -369,13 +368,12 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@echo "=== Training Configuration ==="
 	@echo "GPU Acceleration: $(if $(filter 1,$(USE_GPU)),ENABLED (Device $(GPU_DEVICE)),DISABLED)"
 	@echo "OpenMP Threads: $(OMP_NUM_THREADS)"
-	@echo "Batch Size: $(BATCH_SIZE)"
 	@echo "Learning Rate: $(LEARNING_RATE)"
 	@echo "Max Iterations: $(MAX_ITERATIONS)"
 	@echo "=============================="
 	@echo
 	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
-	CUDA_VISIBLE_DEVICES=$(if $(filter 1,$(USE_GPU)),$(GPU_DEVICE),-1) \
+	$(if $(filter 1,$(USE_GPU)),CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),) \
 	lstmtraining \
 	  --debug_interval $(DEBUG_INTERVAL) \
 	  --traineddata $(PROTO_MODEL) \

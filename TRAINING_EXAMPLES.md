@@ -30,8 +30,7 @@ make training \
   MODEL_NAME=mymodel \
   USE_GPU=1 \
   GPU_DEVICE=0 \
-  MAX_ITERATIONS=50000 \
-  BATCH_SIZE=200
+  MAX_ITERATIONS=50000
 ```
 
 ### 4. Fine-tune with GPU + CPU Optimization
@@ -43,7 +42,6 @@ make training \
   USE_GPU=1 \
   GPU_DEVICE=0 \
   OMP_NUM_THREADS=8 \
-  BATCH_SIZE=200 \
   MAX_ITERATIONS=20000 \
   LEARNING_RATE=0.0001
 ```
@@ -56,7 +54,6 @@ make training \
   MODEL_NAME=mymodel \
   USE_GPU=1 \
   GPU_DEVICE=0 \
-  BATCH_SIZE=300 \
   OMP_NUM_THREADS=16 \
   DEBUG_INTERVAL=1000 \
   MAX_ITERATIONS=100000
@@ -68,19 +65,18 @@ make training \
   MODEL_NAME=mymodel \
   USE_GPU=1 \
   GPU_DEVICE=0 \
-  BATCH_SIZE=150 \
   OMP_NUM_THREADS=8 \
   MAX_ITERATIONS=50000
 ```
 
-### 7. Memory Constrained (Low VRAM)
+### 7. Fast Training (Reduced Iterations)
 ```bash
 make training \
   MODEL_NAME=mymodel \
   USE_GPU=1 \
   GPU_DEVICE=0 \
-  BATCH_SIZE=50 \
-  MAX_ITERATIONS=50000
+  MAX_ITERATIONS=20000 \
+  TARGET_ERROR_RATE=0.05
 ```
 
 ### 8. Multi-GPU Training (Different Models)
@@ -146,18 +142,17 @@ make training \
   MODEL_NAME=quicktest \
   USE_GPU=1 \
   MAX_ITERATIONS=10000 \
-  TARGET_ERROR_RATE=0.05 \
-  BATCH_SIZE=200
+  TARGET_ERROR_RATE=0.05
 ```
 
 ### 14. Training with Epochs Instead of Iterations
 ```bash
-# EPOCHS automatically calculates iterations based on training data size
+# EPOCHS is already supported in the Makefile and automatically calculates 
+# iterations based on training data size (iterations = -EPOCHS)
 make training \
   MODEL_NAME=mymodel \
   EPOCHS=50 \
-  USE_GPU=1 \
-  BATCH_SIZE=200
+  USE_GPU=1
 ```
 
 ## Testing and Evaluation
@@ -172,9 +167,9 @@ make plot MODEL_NAME=mymodel
 # Create both best (float) and fast (int) models from all checkpoints
 make traineddata MODEL_NAME=mymodel
 
-# Create models from specific checkpoints only
+# Create models from specific checkpoints only (using find instead of ls)
 make traineddata MODEL_NAME=mymodel \
-  CHECKPOINT_FILES="$(ls -t data/mymodel/checkpoints/*.checkpoint | head -5)"
+  CHECKPOINT_FILES="$(find data/mymodel/checkpoints -name '*.checkpoint' -type f | sort -r | head -5)"
 ```
 
 ### 17. Evaluate Checkpoints
@@ -208,7 +203,6 @@ make training \
   USE_GPU=1 \
   GPU_DEVICE=0 \
   OMP_NUM_THREADS=8 \
-  BATCH_SIZE=200 \
   MAX_ITERATIONS=50000 \
   LEARNING_RATE=0.0001 \
   TARGET_ERROR_RATE=0.005 \
@@ -238,7 +232,6 @@ export MODEL_NAME=mymodel
 export USE_GPU=1
 export GPU_DEVICE=0
 export OMP_NUM_THREADS=8
-export BATCH_SIZE=200
 export MAX_ITERATIONS=50000
 
 # Run training with environment variables
@@ -253,19 +246,13 @@ make training MODEL_NAME=mymodel USE_GPU=1
 
 1. **Start with defaults**: First run with default settings to establish baseline
 2. **Monitor GPU usage**: Use `nvidia-smi` to ensure GPU is being utilized
-3. **Adjust batch size**: Increase until you run out of GPU memory, then back off 10-20%
+3. **Use checkpoints**: Set DEBUG_INTERVAL to 1000-5000 for regular checkpoints
 4. **Use checkpoints**: Set DEBUG_INTERVAL to 1000-5000 for regular checkpoints
 5. **Early stopping**: Set TARGET_ERROR_RATE to stop when accuracy is good enough
 6. **Compare speeds**: Time different configurations to find optimal settings
 7. **Profile bottlenecks**: Use system tools to identify I/O or CPU bottlenecks
 
 ## Common Issues and Solutions
-
-### Issue: Out of GPU Memory
-```bash
-# Solution: Reduce batch size
-make training MODEL_NAME=mymodel USE_GPU=1 BATCH_SIZE=50
-```
 
 ### Issue: Training Too Slow on CPU
 ```bash
