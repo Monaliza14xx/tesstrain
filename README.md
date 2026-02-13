@@ -244,7 +244,7 @@ make training MODEL_NAME=mymodel USE_GPU=1
 make training MODEL_NAME=mymodel OMP_NUM_THREADS=8
 
 # Note: When USE_GPU=1, OMP_NUM_THREADS is ignored and set to 1 to force GPU-only mode
-# To use GPU with CPU multi-threading disabled GPU mode:
+# To use CPU multi-threading (without GPU mode):
 make training MODEL_NAME=mymodel USE_GPU=0 OMP_NUM_THREADS=8
 ```
 

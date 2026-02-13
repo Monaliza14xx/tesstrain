@@ -41,7 +41,7 @@ To use GPU acceleration, you need Tesseract compiled with CUDA support. See [Bui
 - Setting `CUDA_VISIBLE_DEVICES` to the specified GPU device
 - Limiting OpenMP to 1 thread to ensure GPU is used exclusively
 
-This ensures training runs on GPU and doesn't fall back to CPU, even if the GPU is busy.
+This ensures training runs exclusively on GPU. If the GPU is unavailable, training will fail rather than fall back to CPU. This is intentional to guarantee you're getting GPU performance.
 
 ```bash
 # Train with GPU acceleration (GPU-only mode, no CPU fallback)
