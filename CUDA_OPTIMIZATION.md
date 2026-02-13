@@ -345,28 +345,75 @@ wait
 
 **Problem**: Training configuration shows "GPU ENABLED" but training still uses CPU
 
-**Root Cause**: The `TESSERACT_OPENCL_DEVICE` environment variable was missing. Without this variable, Tesseract doesn't know which GPU device to use, even if CUDA_VISIBLE_DEVICES is set.
+**Symptoms**:
+- Environment variables are set correctly (OMP_THREAD_LIMIT=1, CUDA_VISIBLE_DEVICES, TESSERACT_OPENCL_DEVICE)
+- Training still shows OpenMP usage or CPU activity
+- GPU utilization remains at 0%
 
-**Solution**: As of the latest update, `USE_GPU=1` now **automatically sets all required environment variables**:
-- `OMP_THREAD_LIMIT=1` - Prevents CPU multi-threading fallback
-- `CUDA_VISIBLE_DEVICES=$(GPU_DEVICE)` - Makes GPU visible to CUDA runtime
-- `TESSERACT_OPENCL_DEVICE=GPU:$(GPU_DEVICE)` - **Critical**: Tells Tesseract which GPU to use
+**Root Cause**: The `TESSERACT_OPENCL_DEVICE` environment variable was missing in earlier versions, but the **most common cause** is that Tesseract itself was not built with OpenCL support.
 
-**Verify GPU is being used**:
-1. Check training output includes all three environment variables
-2. Run `nvidia-smi` in another terminal during training
-3. Look for GPU utilization > 0% and increasing memory usage
-4. Verify `lstmtraining` process is listed in GPU processes
+**Solution Steps**:
 
-**Example corrected command**:
-```bash
-OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=0 TESSERACT_OPENCL_DEVICE=GPU:0 \
-lstmtraining \
-  --traineddata model.traineddata \
-  --train_listfile list.train \
-  --eval_listfile list.eval \
-  --max_iterations 10000
+1. **Verify Tesseract has OpenCL support**:
+   ```bash
+   lstmtraining --help 2>&1 | grep -i opencl
+   ```
+   If this returns nothing, Tesseract does NOT have OpenCL support and CANNOT use GPU.
+
+2. **Check OpenCL devices are visible**:
+   ```bash
+   clinfo
+   ```
+   Should list your GPU. If `clinfo` is not installed:
+   ```bash
+   sudo apt-get install clinfo
+   ```
+
+3. **Verify GPU is available**:
+   ```bash
+   nvidia-smi
+   ```
+   Should show your GPU with available memory.
+
+4. **Rebuild Tesseract with OpenCL** (if needed):
+   ```bash
+   git clone https://github.com/tesseract-ocr/tesseract.git
+   cd tesseract
+   ./autogen.sh
+   ./configure --enable-opencl
+   make -j$(nproc)
+   sudo make install
+   ```
+
+5. **Test GPU acceleration works**:
+   The training will now show GPU validation output:
+   ```
+   ⚠️  GPU Mode Enabled - Verifying GPU availability...
+   ✓ GPU detected:
+   Tesla T4, 16130 MiB
+   
+   NOTE: For GPU to work, Tesseract must be built with --enable-opencl
+         If training uses CPU despite this message, rebuild Tesseract with OpenCL.
+   ```
+
+**Important**: Setting environment variables (CUDA_VISIBLE_DEVICES, TESSERACT_OPENCL_DEVICE) does NOT enable GPU support if Tesseract wasn't built with OpenCL. You MUST rebuild Tesseract with `--enable-opencl`.
+
+### Empty Lines in lstmtraining Command
+
+**Problem**: Training output shows blank lines in the lstmtraining command
+
+**Example**:
 ```
+--max_image_MB 12000 \
+--net_mode 1 \
+ \
+ \
+--weight_range 0.1 \
+```
+
+**Cause**: Conditional Makefile parameters that produce empty output when not used (fixed in latest version)
+
+**Solution**: Update to the latest version of tesstrain. The Makefile now consolidates optional parameters on a single line to avoid empty lines.
 
 ### GPU Not Detected
 

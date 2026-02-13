@@ -358,6 +358,28 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@echo "Max Iterations: $(MAX_ITERATIONS)"
 	@echo "=============================="
 	@echo
+	@if [ "$(USE_GPU)" = "1" ]; then \
+		echo "⚠️  GPU Mode Enabled - Verifying GPU availability..."; \
+		if ! command -v nvidia-smi >/dev/null 2>&1; then \
+			echo "❌ WARNING: nvidia-smi not found. GPU drivers may not be installed."; \
+			echo "   Training may fall back to CPU despite USE_GPU=1 setting."; \
+			echo "   Install NVIDIA drivers to enable GPU acceleration."; \
+		elif ! nvidia-smi >/dev/null 2>&1; then \
+			echo "❌ WARNING: nvidia-smi failed. No GPUs detected or drivers not working."; \
+			echo "   Training will likely fall back to CPU."; \
+		else \
+			echo "✓ GPU detected:"; \
+			nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null || echo "  (GPU info unavailable)"; \
+		fi; \
+		if ! command -v clinfo >/dev/null 2>&1; then \
+			echo "⚠️  clinfo not found. Cannot verify OpenCL support."; \
+			echo "   Install clinfo: sudo apt-get install clinfo"; \
+		fi; \
+		echo ""; \
+		echo "NOTE: For GPU to work, Tesseract must be built with --enable-opencl"; \
+		echo "      If training uses CPU despite this message, rebuild Tesseract with OpenCL."; \
+		echo ""; \
+	fi
 	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE) TESSERACT_OPENCL_DEVICE=GPU:$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
 	  --debug_interval $(DEBUG_INTERVAL) \
@@ -370,12 +392,8 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	  --eval_listfile $(OUTPUT_DIR)/list.eval \
 	  --max_iterations $(MAX_ITERATIONS) \
 	  --target_error_rate $(TARGET_ERROR_RATE) \
-	  $(if $(filter 1,$(USE_GPU)),--max_image_MB $(GPU_MAX_MEMORY),) \
-	  $(if $(filter 1,$(USE_GPU)),--net_mode $(NET_MODE),) \
-	  $(if $(and $(filter 1,$(USE_GPU)),$(filter-out -1,$(APPEND_INDEX))),--append_index $(APPEND_INDEX),) \
-	  $(if $(filter-out 0,$(PERFECT_SAMPLE_DELAY)),--perfect_sample_delay $(PERFECT_SAMPLE_DELAY),) \
-	  $(if $(WEIGHT_RANGE),--weight_range $(WEIGHT_RANGE),) \
-	  $(if $(MOMENTUM),--momentum $(MOMENTUM),) \
+	  $(if $(filter 1,$(USE_GPU)),--max_image_MB $(GPU_MAX_MEMORY) --net_mode $(NET_MODE),) \
+	  $(if $(and $(filter 1,$(USE_GPU)),$(filter-out -1,$(APPEND_INDEX))),--append_index $(APPEND_INDEX),)$(if $(filter-out 0,$(PERFECT_SAMPLE_DELAY)), --perfect_sample_delay $(PERFECT_SAMPLE_DELAY),)$(if $(WEIGHT_RANGE), --weight_range $(WEIGHT_RANGE),)$(if $(MOMENTUM), --momentum $(MOMENTUM),) \
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
@@ -398,6 +416,28 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@echo "Max Iterations: $(MAX_ITERATIONS)"
 	@echo "=============================="
 	@echo
+	@if [ "$(USE_GPU)" = "1" ]; then \
+		echo "⚠️  GPU Mode Enabled - Verifying GPU availability..."; \
+		if ! command -v nvidia-smi >/dev/null 2>&1; then \
+			echo "❌ WARNING: nvidia-smi not found. GPU drivers may not be installed."; \
+			echo "   Training may fall back to CPU despite USE_GPU=1 setting."; \
+			echo "   Install NVIDIA drivers to enable GPU acceleration."; \
+		elif ! nvidia-smi >/dev/null 2>&1; then \
+			echo "❌ WARNING: nvidia-smi failed. No GPUs detected or drivers not working."; \
+			echo "   Training will likely fall back to CPU."; \
+		else \
+			echo "✓ GPU detected:"; \
+			nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>/dev/null || echo "  (GPU info unavailable)"; \
+		fi; \
+		if ! command -v clinfo >/dev/null 2>&1; then \
+			echo "⚠️  clinfo not found. Cannot verify OpenCL support."; \
+			echo "   Install clinfo: sudo apt-get install clinfo"; \
+		fi; \
+		echo ""; \
+		echo "NOTE: For GPU to work, Tesseract must be built with --enable-opencl"; \
+		echo "      If training uses CPU despite this message, rebuild Tesseract with OpenCL."; \
+		echo ""; \
+	fi
 	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE) TESSERACT_OPENCL_DEVICE=GPU:$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
 	  --debug_interval $(DEBUG_INTERVAL) \
@@ -409,12 +449,8 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	  --eval_listfile $(OUTPUT_DIR)/list.eval \
 	  --max_iterations $(MAX_ITERATIONS) \
 	  --target_error_rate $(TARGET_ERROR_RATE) \
-	  $(if $(filter 1,$(USE_GPU)),--max_image_MB $(GPU_MAX_MEMORY),) \
-	  $(if $(filter 1,$(USE_GPU)),--net_mode $(NET_MODE),) \
-	  $(if $(and $(filter 1,$(USE_GPU)),$(filter-out -1,$(APPEND_INDEX))),--append_index $(APPEND_INDEX),) \
-	  $(if $(filter-out 0,$(PERFECT_SAMPLE_DELAY)),--perfect_sample_delay $(PERFECT_SAMPLE_DELAY),) \
-	  $(if $(WEIGHT_RANGE),--weight_range $(WEIGHT_RANGE),) \
-	  $(if $(MOMENTUM),--momentum $(MOMENTUM),) \
+	  $(if $(filter 1,$(USE_GPU)),--max_image_MB $(GPU_MAX_MEMORY) --net_mode $(NET_MODE),) \
+	  $(if $(and $(filter 1,$(USE_GPU)),$(filter-out -1,$(APPEND_INDEX))),--append_index $(APPEND_INDEX),)$(if $(filter-out 0,$(PERFECT_SAMPLE_DELAY)), --perfect_sample_delay $(PERFECT_SAMPLE_DELAY),)$(if $(WEIGHT_RANGE), --weight_range $(WEIGHT_RANGE),)$(if $(MOMENTUM), --momentum $(MOMENTUM),) \
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
