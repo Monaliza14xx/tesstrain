@@ -236,23 +236,25 @@ The training workflow now supports GPU acceleration (CUDA) and CPU parallelizati
 ### Quick Start
 
 ```bash
-# Train with GPU acceleration (requires CUDA-enabled Tesseract)
+# Train with GPU acceleration (GPU-only mode, no CPU fallback)
+# Requires CUDA-enabled Tesseract build
 make training MODEL_NAME=mymodel USE_GPU=1
 
 # Train with CPU multi-threading (works with any Tesseract build)
 make training MODEL_NAME=mymodel OMP_NUM_THREADS=8
 
-# Combine optimizations for maximum performance
-make training MODEL_NAME=mymodel USE_GPU=1 OMP_NUM_THREADS=8
+# Note: When USE_GPU=1, OMP_NUM_THREADS is ignored and set to 1 to force GPU-only mode
+# To use GPU with CPU multi-threading disabled GPU mode:
+make training MODEL_NAME=mymodel USE_GPU=0 OMP_NUM_THREADS=8
 ```
 
 ### Available Optimization Variables
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `USE_GPU` | 0 | Enable GPU acceleration (requires CUDA-enabled Tesseract) |
+| `USE_GPU` | 0 | Enable GPU-only mode (forces GPU, prevents CPU fallback) |
 | `GPU_DEVICE` | 0 | GPU device ID for multi-GPU systems |
-| `OMP_NUM_THREADS` | Auto | Number of OpenMP threads for CPU parallelization |
+| `OMP_NUM_THREADS` | Auto | Number of OpenMP threads (ignored when USE_GPU=1) |
 
 ### Detailed Guide
 

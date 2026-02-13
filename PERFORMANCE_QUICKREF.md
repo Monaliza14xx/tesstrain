@@ -1,14 +1,16 @@
 # Performance Optimization Quick Reference
 
-## GPU/CUDA Training
+## GPU/CUDA Training (GPU-Only Mode)
 
 ```bash
-# Enable GPU (requires CUDA-enabled Tesseract)
+# Enable GPU (forces GPU-only, prevents CPU fallback)
 make training MODEL_NAME=mymodel USE_GPU=1
 
 # Select specific GPU device
 make training MODEL_NAME=mymodel USE_GPU=1 GPU_DEVICE=1
 ```
+
+**Important**: `USE_GPU=1` forces GPU-only mode by setting `OMP_THREAD_LIMIT=1`. Training will fail if GPU is not available (no CPU fallback).
 
 ## CPU Optimization
 
@@ -20,20 +22,13 @@ make training MODEL_NAME=mymodel OMP_NUM_THREADS=$(nproc)
 make training MODEL_NAME=mymodel OMP_NUM_THREADS=8
 ```
 
-## Performance Tuning
-
-```bash
-# Combine all optimizations
-make training MODEL_NAME=mymodel USE_GPU=1 OMP_NUM_THREADS=8
-```
-
 ## Performance Variables
 
 | Variable | Default | Effect |
 |----------|---------|--------|
-| `USE_GPU` | 0 | 1=Enable GPU, 0=CPU only |
+| `USE_GPU` | 0 | 1=GPU-only mode (OMP_THREAD_LIMIT=1), 0=CPU only |
 | `GPU_DEVICE` | 0 | GPU device ID (0, 1, 2, ...) |
-| `OMP_NUM_THREADS` | Auto | CPU thread count |
+| `OMP_NUM_THREADS` | Auto | CPU thread count (ignored when USE_GPU=1) |
 
 ## Typical Speedups
 

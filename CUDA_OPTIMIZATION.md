@@ -36,16 +36,25 @@ To use GPU acceleration, you need Tesseract compiled with CUDA support. See [Bui
 
 ### Basic GPU Usage
 
+**Important**: When `USE_GPU=1` is set, the training workflow **forces GPU-only mode** by:
+- Setting `OMP_THREAD_LIMIT=1` to prevent CPU fallback
+- Setting `CUDA_VISIBLE_DEVICES` to the specified GPU device
+- Limiting OpenMP to 1 thread to ensure GPU is used exclusively
+
+This ensures training runs on GPU and doesn't fall back to CPU, even if the GPU is busy.
+
 ```bash
-# Train with GPU acceleration
+# Train with GPU acceleration (GPU-only mode, no CPU fallback)
 make training MODEL_NAME=mymodel USE_GPU=1
 
 # Use specific GPU device (for multi-GPU systems)
 make training MODEL_NAME=mymodel USE_GPU=1 GPU_DEVICE=1
 
-# Fine-tune with GPU
+# Fine-tune with GPU (GPU-only mode)
 make training MODEL_NAME=mymodel START_MODEL=eng USE_GPU=1
 ```
+
+**Note**: If your Tesseract build doesn't have GPU support, training will fail rather than fall back to CPU. This is intentional to ensure you're getting the expected performance.
 
 ## CPU Optimization
 
@@ -190,15 +199,33 @@ wait
 
 ## Troubleshooting
 
+### GPU Not Being Used (Training Falls Back to CPU)
+
+**Problem**: Training configuration shows "GPU ENABLED" but training still uses CPU
+
+**Solution**: As of the latest update, `USE_GPU=1` now **forces GPU-only mode**:
+- Sets `OMP_THREAD_LIMIT=1` to prevent CPU multi-threading fallback
+- Sets `CUDA_VISIBLE_DEVICES` to expose only the specified GPU
+- OpenMP threads limited to 1 to ensure GPU is used
+
+If training still doesn't use GPU, check:
+1. Verify Tesseract is built with CUDA/OpenCL support: `lstmtraining --help`
+2. Check CUDA installation: `nvidia-smi`
+3. Ensure GPU drivers are up to date
+4. Check that GPU has available memory: `nvidia-smi`
+
+**Note**: With GPU-only mode, training will fail if GPU is not available (no CPU fallback). This is intentional to ensure you get GPU performance.
+
 ### GPU Not Detected
 
-**Problem**: Training runs but doesn't use GPU
+**Problem**: Training fails immediately with GPU errors
 
 **Solutions**:
 1. Verify Tesseract is built with CUDA: `lstmtraining --help | grep -i cuda`
 2. Check CUDA installation: `nvidia-smi`
 3. Verify CUDA_VISIBLE_DEVICES is set correctly
 4. Check GPU memory availability
+5. If Tesseract doesn't have GPU support, use `USE_GPU=0` for CPU training
 
 ### Out of Memory Errors
 

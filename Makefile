@@ -283,14 +283,14 @@ traineddata: $(FASTMODEL_FILES)
 $(OUTPUT_DIR)/tessdata_best $(OUTPUT_DIR)/tessdata_fast $(OUTPUT_DIR)/eval:
 	@mkdir -p $@
 $(OUTPUT_DIR)/tessdata_best/%.traineddata: $(OUTPUT_DIR)/checkpoints/%.checkpoint | $(OUTPUT_DIR)/tessdata_best
-	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
+	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
           --stop_training \
           --continue_from $< \
           --traineddata $(PROTO_MODEL) \
           --model_output $@
 $(OUTPUT_DIR)/tessdata_fast/%.traineddata: $(OUTPUT_DIR)/checkpoints/%.checkpoint | $(OUTPUT_DIR)/tessdata_fast
-	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
+	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
           --stop_training \
           --continue_from $< \
@@ -325,14 +325,13 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@mkdir -p $(OUTPUT_DIR)/checkpoints
 	@echo
 	@echo "=== Training Configuration ==="
-	@echo "GPU Acceleration: $(if $(filter 1,$(USE_GPU)),ENABLED (Device $(GPU_DEVICE)),DISABLED)"
-	@echo "OpenMP Threads: $(OMP_NUM_THREADS)"
+	@echo "GPU Acceleration: $(if $(filter 1,$(USE_GPU)),ENABLED (Device $(GPU_DEVICE)) - FORCING GPU ONLY,DISABLED)"
+	@echo "OpenMP Threads: $(if $(filter 1,$(USE_GPU)),1 (GPU mode),$(OMP_NUM_THREADS))"
 	@echo "Learning Rate: $(LEARNING_RATE)"
 	@echo "Max Iterations: $(MAX_ITERATIONS)"
 	@echo "=============================="
 	@echo
-	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
-	$(if $(filter 1,$(USE_GPU)),CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),) \
+	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
 	  --debug_interval $(DEBUG_INTERVAL) \
 	  --traineddata $(PROTO_MODEL) \
@@ -347,7 +346,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
-	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
+	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
 	--stop_training \
 	--continue_from $(LAST_CHECKPOINT) \
@@ -358,14 +357,13 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@mkdir -p $(OUTPUT_DIR)/checkpoints
 	@echo
 	@echo "=== Training Configuration ==="
-	@echo "GPU Acceleration: $(if $(filter 1,$(USE_GPU)),ENABLED (Device $(GPU_DEVICE)),DISABLED)"
-	@echo "OpenMP Threads: $(OMP_NUM_THREADS)"
+	@echo "GPU Acceleration: $(if $(filter 1,$(USE_GPU)),ENABLED (Device $(GPU_DEVICE)) - FORCING GPU ONLY,DISABLED)"
+	@echo "OpenMP Threads: $(if $(filter 1,$(USE_GPU)),1 (GPU mode),$(OMP_NUM_THREADS))"
 	@echo "Learning Rate: $(LEARNING_RATE)"
 	@echo "Max Iterations: $(MAX_ITERATIONS)"
 	@echo "=============================="
 	@echo
-	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
-	$(if $(filter 1,$(USE_GPU)),CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),) \
+	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
 	  --debug_interval $(DEBUG_INTERVAL) \
 	  --traineddata $(PROTO_MODEL) \
@@ -379,7 +377,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
-	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
+	$(if $(filter 1,$(USE_GPU)),OMP_THREAD_LIMIT=1 CUDA_VISIBLE_DEVICES=$(GPU_DEVICE),OMP_NUM_THREADS=$(OMP_NUM_THREADS)) \
 	lstmtraining \
 	--stop_training \
 	--continue_from $(LAST_CHECKPOINT) \
