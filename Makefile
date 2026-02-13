@@ -71,6 +71,20 @@ endif
 # Network specification. Default: $(NET_SPEC)
 NET_SPEC := [1,36,0,1 Ct3,3,16 Mp3,3 Lfys48 Lfx96 Lrx96 Lfx192 O1c\#\#\#]
 
+# GPU/CUDA Support Settings
+# Enable GPU acceleration if Tesseract is built with CUDA support. Default: $(USE_GPU)
+USE_GPU ?= 0
+# GPU device ID to use (for multi-GPU systems). Default: $(GPU_DEVICE)
+GPU_DEVICE ?= 0
+# Number of OpenMP threads for CPU parallelization. Default: $(OMP_NUM_THREADS)
+OMP_NUM_THREADS ?= $(shell nproc 2>/dev/null || echo 4)
+
+# Performance Optimization Settings
+# Batch size for training (larger = faster but more memory). Default: $(BATCH_SIZE)
+BATCH_SIZE ?= 100
+# Enable performance profiling. Default: $(PROFILE)
+PROFILE ?= 0
+
 TESSERACT_SCRIPTS := Arabic Armenian Bengali Bopomofo Canadian_Aboriginal Cherokee Cyrillic
 TESSERACT_SCRIPTS += Devanagari Ethiopic Georgian Greek Gujarati Gurmukhi
 TESSERACT_SCRIPTS += Hangul Han Hebrew Hiragana Kannada Katakana Khmer Lao Latin
@@ -165,6 +179,14 @@ help:
 	@echo "    RATIO_TRAIN        Ratio of train / eval training data. Default: $(RATIO_TRAIN)"
 	@echo "    TARGET_ERROR_RATE  Default Target Error Rate. Default: $(TARGET_ERROR_RATE)"
 	@echo "    LOG_FILE           File to copy training output to and read plot figures from. Default: $(LOG_FILE)"
+	@echo ""
+	@echo "  Performance Optimization Variables"
+	@echo ""
+	@echo "    USE_GPU            Enable GPU acceleration (requires CUDA-enabled Tesseract). Default: $(USE_GPU)"
+	@echo "    GPU_DEVICE         GPU device ID to use for training (multi-GPU systems). Default: $(GPU_DEVICE)"
+	@echo "    OMP_NUM_THREADS    Number of OpenMP threads for CPU parallelization. Default: $(OMP_NUM_THREADS)"
+	@echo "    BATCH_SIZE         Batch size for training (larger = faster, more memory). Default: $(BATCH_SIZE)"
+	@echo "    PROFILE            Enable performance profiling during training. Default: $(PROFILE)"
 
 # END-EVAL
 
@@ -269,12 +291,14 @@ traineddata: $(FASTMODEL_FILES)
 $(OUTPUT_DIR)/tessdata_best $(OUTPUT_DIR)/tessdata_fast $(OUTPUT_DIR)/eval:
 	@mkdir -p $@
 $(OUTPUT_DIR)/tessdata_best/%.traineddata: $(OUTPUT_DIR)/checkpoints/%.checkpoint | $(OUTPUT_DIR)/tessdata_best
+	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
 	lstmtraining \
           --stop_training \
           --continue_from $< \
           --traineddata $(PROTO_MODEL) \
           --model_output $@
 $(OUTPUT_DIR)/tessdata_fast/%.traineddata: $(OUTPUT_DIR)/checkpoints/%.checkpoint | $(OUTPUT_DIR)/tessdata_fast
+	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
 	lstmtraining \
           --stop_training \
           --continue_from $< \
@@ -308,6 +332,16 @@ ifdef START_MODEL
 $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@mkdir -p $(OUTPUT_DIR)/checkpoints
 	@echo
+	@echo "=== Training Configuration ==="
+	@echo "GPU Acceleration: $(if $(filter 1,$(USE_GPU)),ENABLED (Device $(GPU_DEVICE)),DISABLED)"
+	@echo "OpenMP Threads: $(OMP_NUM_THREADS)"
+	@echo "Batch Size: $(BATCH_SIZE)"
+	@echo "Learning Rate: $(LEARNING_RATE)"
+	@echo "Max Iterations: $(MAX_ITERATIONS)"
+	@echo "=============================="
+	@echo
+	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
+	CUDA_VISIBLE_DEVICES=$(if $(filter 1,$(USE_GPU)),$(GPU_DEVICE),-1) \
 	lstmtraining \
 	  --debug_interval $(DEBUG_INTERVAL) \
 	  --traineddata $(PROTO_MODEL) \
@@ -322,6 +356,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
+	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
 	lstmtraining \
 	--stop_training \
 	--continue_from $(LAST_CHECKPOINT) \
@@ -331,6 +366,16 @@ else
 $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@mkdir -p $(OUTPUT_DIR)/checkpoints
 	@echo
+	@echo "=== Training Configuration ==="
+	@echo "GPU Acceleration: $(if $(filter 1,$(USE_GPU)),ENABLED (Device $(GPU_DEVICE)),DISABLED)"
+	@echo "OpenMP Threads: $(OMP_NUM_THREADS)"
+	@echo "Batch Size: $(BATCH_SIZE)"
+	@echo "Learning Rate: $(LEARNING_RATE)"
+	@echo "Max Iterations: $(MAX_ITERATIONS)"
+	@echo "=============================="
+	@echo
+	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
+	CUDA_VISIBLE_DEVICES=$(if $(filter 1,$(USE_GPU)),$(GPU_DEVICE),-1) \
 	lstmtraining \
 	  --debug_interval $(DEBUG_INTERVAL) \
 	  --traineddata $(PROTO_MODEL) \
@@ -344,6 +389,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
+	OMP_NUM_THREADS=$(OMP_NUM_THREADS) \
 	lstmtraining \
 	--stop_training \
 	--continue_from $(LAST_CHECKPOINT) \

@@ -15,6 +15,7 @@
     * [Change directory assumptions](#change-directory-assumptions)
     * [Make model files (traineddata)](#make-model-files-traineddata)
     * [Plotting CER](#plotting-cer)
+* [Performance Optimization](#performance-optimization)
 * [License](#license)
 
 ## Installation
@@ -227,6 +228,42 @@ training and generate the plots:
 Which should then look like this:
 
 ![ocrd.plot_cer.png](./ocrd.plot_cer.png)
+
+## Performance Optimization
+
+The training workflow now supports GPU acceleration (CUDA) and CPU parallelization (OpenMP) for significantly faster training.
+
+### Quick Start
+
+```bash
+# Train with GPU acceleration (requires CUDA-enabled Tesseract)
+make training MODEL_NAME=mymodel USE_GPU=1
+
+# Train with CPU multi-threading (works with any Tesseract build)
+make training MODEL_NAME=mymodel OMP_NUM_THREADS=8
+
+# Combine optimizations for maximum performance
+make training MODEL_NAME=mymodel USE_GPU=1 OMP_NUM_THREADS=8 BATCH_SIZE=200
+```
+
+### Available Optimization Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `USE_GPU` | 0 | Enable GPU acceleration (requires CUDA-enabled Tesseract) |
+| `GPU_DEVICE` | 0 | GPU device ID for multi-GPU systems |
+| `OMP_NUM_THREADS` | Auto | Number of OpenMP threads for CPU parallelization |
+| `BATCH_SIZE` | 100 | Training batch size (larger = faster, more memory) |
+
+### Detailed Guide
+
+For comprehensive information on:
+- Building Tesseract with CUDA support
+- GPU/CPU optimization strategies
+- Performance tuning and benchmarks
+- Troubleshooting
+
+See the [CUDA and Performance Optimization Guide](./CUDA_OPTIMIZATION.md).
 
 ## License
 
