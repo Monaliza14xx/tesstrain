@@ -325,6 +325,21 @@ Look for:
 - Memory usage matching GPU_MAX_MEMORY setting
 - Process `lstmtraining` listed under GPU processes
 
+### Troubleshooting "Still Using CPU"
+
+If training uses CPU despite `USE_GPU=1`:
+
+**Most common cause**: Tesseract not built with OpenCL support.
+
+**Quick check**:
+```bash
+lstmtraining --help 2>&1 | grep -i opencl
+```
+
+If this returns nothing, you need to rebuild Tesseract with `--enable-opencl`.
+
+**Complete troubleshooting guide**: See [GPU_TROUBLESHOOTING.md](./GPU_TROUBLESHOOTING.md)
+
 ## License
 
 Software is provided under the terms of the `Apache 2.0` license.
