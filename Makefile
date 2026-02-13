@@ -79,14 +79,6 @@ GPU_DEVICE ?= 0
 # Number of OpenMP threads for CPU parallelization. Default: auto-detected or 4
 OMP_NUM_THREADS ?= $(shell nproc 2>/dev/null || echo 4)
 
-# Performance Optimization Settings
-# Batch size for training (larger = faster but more memory). Default: $(BATCH_SIZE)
-# Note: Standard lstmtraining doesn't expose batch size parameter directly
-BATCH_SIZE ?= 100
-# Enable performance profiling. Default: $(PROFILE)
-# Note: Standard lstmtraining doesn't expose profiling parameter directly
-PROFILE ?= 0
-
 TESSERACT_SCRIPTS := Arabic Armenian Bengali Bopomofo Canadian_Aboriginal Cherokee Cyrillic
 TESSERACT_SCRIPTS += Devanagari Ethiopic Georgian Greek Gujarati Gurmukhi
 TESSERACT_SCRIPTS += Hangul Han Hebrew Hiragana Kannada Katakana Khmer Lao Latin

@@ -247,10 +247,9 @@ make training MODEL_NAME=mymodel USE_GPU=1
 1. **Start with defaults**: First run with default settings to establish baseline
 2. **Monitor GPU usage**: Use `nvidia-smi` to ensure GPU is being utilized
 3. **Use checkpoints**: Set DEBUG_INTERVAL to 1000-5000 for regular checkpoints
-4. **Use checkpoints**: Set DEBUG_INTERVAL to 1000-5000 for regular checkpoints
-5. **Early stopping**: Set TARGET_ERROR_RATE to stop when accuracy is good enough
-6. **Compare speeds**: Time different configurations to find optimal settings
-7. **Profile bottlenecks**: Use system tools to identify I/O or CPU bottlenecks
+4. **Early stopping**: Set TARGET_ERROR_RATE to stop when accuracy is good enough
+5. **Compare speeds**: Time different configurations to find optimal settings
+6. **Profile bottlenecks**: Use system tools to identify I/O or CPU bottlenecks
 
 ## Common Issues and Solutions
 

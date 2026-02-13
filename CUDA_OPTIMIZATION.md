@@ -73,8 +73,6 @@ make training MODEL_NAME=mymodel OMP_NUM_THREADS=4
 
 ## Performance Tuning
 
-## Performance Tuning
-
 ### Training Parameters
 
 Optimize training performance using these parameters:
