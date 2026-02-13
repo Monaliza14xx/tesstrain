@@ -87,6 +87,14 @@ NET_MODE ?= 1
 # Append index for multi-GPU training (-1 for auto, 0+ for specific index). Default: $(APPEND_INDEX)
 APPEND_INDEX ?= -1
 
+# Advanced Training Parameters
+# Perfect sample delay - iterations before using perfect samples (0=disabled, >0=delay). Default: $(PERFECT_SAMPLE_DELAY)
+PERFECT_SAMPLE_DELAY ?= 0
+# Weight range for initialization (higher=more random). Default: $(WEIGHT_RANGE)
+WEIGHT_RANGE ?= 0.1
+# Momentum for gradient descent (0.0-1.0, higher=more momentum). Default: $(MOMENTUM)
+MOMENTUM ?= 0.9
+
 TESSERACT_SCRIPTS := Arabic Armenian Bengali Bopomofo Canadian_Aboriginal Cherokee Cyrillic
 TESSERACT_SCRIPTS += Devanagari Ethiopic Georgian Greek Gujarati Gurmukhi
 TESSERACT_SCRIPTS += Hangul Han Hebrew Hiragana Kannada Katakana Khmer Lao Latin
@@ -190,6 +198,12 @@ help:
 	@echo "    GPU_MAX_MEMORY     Maximum GPU memory in MB (for T4: 12000-14000 recommended). Default: $(GPU_MAX_MEMORY)"
 	@echo "    NET_MODE           LSTM network mode: 0=serial (slower, less memory), 1=parallel (faster). Default: $(NET_MODE)"
 	@echo "    APPEND_INDEX       Multi-GPU training index (-1=auto, 0+=specific). Default: $(APPEND_INDEX)"
+	@echo ""
+	@echo "  Advanced Training Parameters"
+	@echo ""
+	@echo "    PERFECT_SAMPLE_DELAY  Iterations before using perfect samples (0=disabled). Default: $(PERFECT_SAMPLE_DELAY)"
+	@echo "    WEIGHT_RANGE       Weight initialization range (higher=more random). Default: $(WEIGHT_RANGE)"
+	@echo "    MOMENTUM           Gradient descent momentum (0.0-1.0). Default: $(MOMENTUM)"
 
 # END-EVAL
 
@@ -359,6 +373,9 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	  $(if $(filter 1,$(USE_GPU)),--max_image_MB $(GPU_MAX_MEMORY),) \
 	  $(if $(filter 1,$(USE_GPU)),--net_mode $(NET_MODE),) \
 	  $(if $(and $(filter 1,$(USE_GPU)),$(filter-out -1,$(APPEND_INDEX))),--append_index $(APPEND_INDEX),) \
+	  $(if $(filter-out 0,$(PERFECT_SAMPLE_DELAY)),--perfect_sample_delay $(PERFECT_SAMPLE_DELAY),) \
+	  $(if $(WEIGHT_RANGE),--weight_range $(WEIGHT_RANGE),) \
+	  $(if $(MOMENTUM),--momentum $(MOMENTUM),) \
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
@@ -395,6 +412,9 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	  $(if $(filter 1,$(USE_GPU)),--max_image_MB $(GPU_MAX_MEMORY),) \
 	  $(if $(filter 1,$(USE_GPU)),--net_mode $(NET_MODE),) \
 	  $(if $(and $(filter 1,$(USE_GPU)),$(filter-out -1,$(APPEND_INDEX))),--append_index $(APPEND_INDEX),) \
+	  $(if $(filter-out 0,$(PERFECT_SAMPLE_DELAY)),--perfect_sample_delay $(PERFECT_SAMPLE_DELAY),) \
+	  $(if $(WEIGHT_RANGE),--weight_range $(WEIGHT_RANGE),) \
+	  $(if $(MOMENTUM),--momentum $(MOMENTUM),) \
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo

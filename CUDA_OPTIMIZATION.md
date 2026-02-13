@@ -151,12 +151,32 @@ Optimize training performance using these parameters:
 | `DEBUG_INTERVAL` | 0 | Checkpoint save interval (0=only save best) |
 | `LEARNING_RATE` | 0.002 (scratch) / 0.0001 (fine-tune) | Training learning rate |
 
+### Advanced Training Parameters
+
+Fine-tune the training process with these advanced parameters:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PERFECT_SAMPLE_DELAY` | 0 | Iterations before using perfect samples (0=disabled, >0=delay) |
+| `WEIGHT_RANGE` | 0.1 | Range for initial random weights (higher=more random initialization) |
+| `MOMENTUM` | 0.9 | Gradient descent momentum (0.0-1.0, higher=more momentum) |
+
+**Perfect Sample Delay**: Controls when the network starts using "perfect" training samples. Setting this to a positive value (e.g., 4000) can help with convergence by allowing the network to learn from imperfect samples first.
+
+**Weight Range**: Controls the randomization of initial network weights. Default 0.1 works well for most cases. Increase for more random initialization if training gets stuck.
+
+**Momentum**: Controls the momentum term in gradient descent. Default 0.9 provides good balance. Higher values (closer to 1.0) give more momentum, lower values give less.
+
 ```bash
 # Combine optimizations for maximum performance
 make training MODEL_NAME=mymodel \
   USE_GPU=1 \
   GPU_DEVICE=0 \
-  OMP_NUM_THREADS=8 \
+  GPU_MAX_MEMORY=14000 \
+  NET_MODE=1 \
+  PERFECT_SAMPLE_DELAY=4000 \
+  WEIGHT_RANGE=0.1 \
+  MOMENTUM=0.9 \
   DEBUG_INTERVAL=1000 \
   MAX_ITERATIONS=100000
 

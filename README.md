@@ -277,6 +277,16 @@ Without `TESSERACT_OPENCL_DEVICE`, Tesseract will default to CPU even if a GPU i
 | `NET_MODE` | 1 | LSTM mode: 0=serial (less memory), 1=parallel (faster) |
 | `APPEND_INDEX` | -1 | Multi-GPU index: -1=auto, 0+=specific |
 
+### Advanced Training Parameters
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PERFECT_SAMPLE_DELAY` | 0 | Iterations before using perfect samples (0=disabled) |
+| `WEIGHT_RANGE` | 0.1 | Weight initialization range (higher=more random) |
+| `MOMENTUM` | 0.9 | Gradient descent momentum (0.0-1.0) |
+
+These advanced parameters can help fine-tune training convergence and performance.
+
 ### Detailed Guide
 
 For comprehensive information on:
