@@ -43,9 +43,17 @@ New parameters for optimizing GPU memory and performance:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `GPU_MAX_MEMORY` | 12000 | Maximum GPU memory in MB. For T4 (16GB): 12000-14000 recommended |
+| `GPU_MAX_MEMORY` | 14000 | Maximum GPU memory in MB. Controls batch size (higher = more parallel processing). For T4 (16GB): 14000 recommended |
 | `NET_MODE` | 1 | LSTM network mode: 0=serial (slower, less memory), 1=parallel (faster, more memory) |
 | `APPEND_INDEX` | -1 | Multi-GPU training index: -1=auto, 0+=specific index |
+
+**Understanding Batch Processing**:
+- lstmtraining doesn't have an explicit `--batch_size` parameter
+- Instead, `GPU_MAX_MEMORY` controls **implicit batching**
+- More GPU memory = More images processed in parallel = Faster training
+- For Tesla T4 (16GB): Use `GPU_MAX_MEMORY=14000` for maximum speed
+
+See [BATCH_PROCESSING_GUIDE.md](./BATCH_PROCESSING_GUIDE.md) for comprehensive details on batch processing and GPU utilization.
 
 **Important**: When `USE_GPU=1`, the workflow automatically sets:
 - `CUDA_VISIBLE_DEVICES=$(GPU_DEVICE)` - Makes only the specified GPU visible
@@ -97,6 +105,36 @@ make training MODEL_NAME=lao140k \
   LEARNING_RATE=0.0001 \
   MAX_ITERATIONS=10000
 ```
+
+### T4 GPU Optimization (16GB)
+
+**Optimal Configuration for Maximum Speed**:
+```bash
+make training MODEL_NAME=lao140k \
+  USE_GPU=1 \
+  GPU_MAX_MEMORY=14000 \
+  NET_MODE=1 \
+  START_MODEL=Lao \
+  LEARNING_RATE=0.0001 \
+  MAX_ITERATIONS=10000
+```
+
+**Expected Results**:
+- GPU Memory Usage: ~14000 MiB (out of 15360 MiB)
+- GPU Utilization: 70-100%
+- Training Speed: 15-20x faster than CPU
+- Temperature: 60-80°C (normal under load)
+
+**If GPU Utilization is 0%**:
+1. Check Tesseract has OpenCL: `lstmtraining --help | grep opencl`
+2. If no output, rebuild Tesseract with `--enable-opencl`
+3. See [GPU_TROUBLESHOOTING.md](./GPU_TROUBLESHOOTING.md)
+
+**Batch Processing**:
+- T4 with 14000 MB can process many images in parallel
+- Larger images = fewer in parallel, but still faster than CPU
+- Smaller images = more in parallel, maximum speed
+- Monitor with: `watch -n 1 nvidia-smi`
 
 **Memory-Constrained (if OOM errors occur)**:
 ```bash

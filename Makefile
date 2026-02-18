@@ -80,8 +80,10 @@ GPU_DEVICE ?= 0
 OMP_NUM_THREADS ?= $(shell nproc 2>/dev/null || echo 4)
 
 # GPU Optimization Parameters
-# Maximum GPU memory to use (in MB). For T4 GPU (16GB), recommended: 12000-14000. Default: $(GPU_MAX_MEMORY)
-GPU_MAX_MEMORY ?= 12000
+# Maximum GPU memory to use (in MB). Higher values = more parallel processing (faster).
+# For T4 GPU (16GB): 14000 recommended. For larger GPUs: up to 28000+. Default: $(GPU_MAX_MEMORY)
+# This controls batch processing - more memory = more images processed in parallel.
+GPU_MAX_MEMORY ?= 14000
 # Network mode for LSTM: 0=serial (slow, less memory), 1=parallel (fast, more memory). Default: $(NET_MODE)
 NET_MODE ?= 1
 # Append index for multi-GPU training (-1 for auto, 0+ for specific index). Default: $(APPEND_INDEX)
@@ -195,7 +197,8 @@ help:
 	@echo "    USE_GPU            Enable GPU acceleration (requires CUDA-enabled Tesseract). Default: $(USE_GPU)"
 	@echo "    GPU_DEVICE         GPU device ID to use for training (multi-GPU systems). Default: $(GPU_DEVICE)"
 	@echo "    OMP_NUM_THREADS    Number of OpenMP threads for CPU parallelization. Default: $(OMP_NUM_THREADS)"
-	@echo "    GPU_MAX_MEMORY     Maximum GPU memory in MB (for T4: 12000-14000 recommended). Default: $(GPU_MAX_MEMORY)"
+	@echo "    GPU_MAX_MEMORY     Maximum GPU memory in MB. Higher = faster (more parallel processing)."
+	@echo "                       For T4 (16GB): 14000 recommended. Default: $(GPU_MAX_MEMORY)"
 	@echo "    NET_MODE           LSTM network mode: 0=serial (slower, less memory), 1=parallel (faster). Default: $(NET_MODE)"
 	@echo "    APPEND_INDEX       Multi-GPU training index (-1=auto, 0+=specific). Default: $(APPEND_INDEX)"
 	@echo ""
@@ -204,6 +207,10 @@ help:
 	@echo "    PERFECT_SAMPLE_DELAY  Iterations before using perfect samples (0=disabled). Default: $(PERFECT_SAMPLE_DELAY)"
 	@echo "    WEIGHT_RANGE       Weight initialization range (higher=more random). Default: $(WEIGHT_RANGE)"
 	@echo "    MOMENTUM           Gradient descent momentum (0.0-1.0). Default: $(MOMENTUM)"
+	@echo ""
+	@echo "  Note: lstmtraining doesn't have explicit batch size parameter. Instead, it processes"
+	@echo "        images in parallel based on GPU_MAX_MEMORY. Higher memory = more images processed"
+	@echo "        simultaneously = faster training. Monitor GPU usage with: watch nvidia-smi"
 
 # END-EVAL
 

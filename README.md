@@ -252,6 +252,19 @@ make training MODEL_NAME=mymodel OMP_NUM_THREADS=8
 make training MODEL_NAME=mymodel USE_GPU=0 OMP_NUM_THREADS=8
 ```
 
+**Quick Start for Tesla T4 (16GB)**:
+```bash
+make training MODEL_NAME=yourmodel \
+  USE_GPU=1 \
+  GPU_MAX_MEMORY=14000 \
+  START_MODEL=eng \
+  MAX_ITERATIONS=50000
+```
+
+**Note**: lstmtraining doesn't have a separate `batch_size` parameter. Instead, `GPU_MAX_MEMORY` controls how many images are processed in parallel (implicit batching). Higher memory = larger effective batch size = faster training.
+
+See [BATCH_PROCESSING_GUIDE.md](./BATCH_PROCESSING_GUIDE.md) for details on maximizing GPU utilization.
+
 ### How GPU Acceleration Works
 
 When `USE_GPU=1` is set, the workflow automatically configures three critical environment variables:
