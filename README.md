@@ -304,7 +304,14 @@ Without `TESSERACT_OPENCL_DEVICE`, Tesseract will default to CPU even if a GPU i
 | `MOMENTUM` | 0.9 | Gradient descent momentum (0.0-1.0) |
 | `BATCH_SIZE` | 0 | Explicit batch size (0=disabled, uses GPU_MAX_MEMORY). Requires Tesseract 5.x+ |
 
-These advanced parameters can help fine-tune training convergence and performance.
+### GPU Stability Parameters
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CHECKPOINT_INTERVAL` | 100 | Save model every N iterations (prevents data loss on GPU disconnect) |
+| `ADAM_BETA` | 0.999 | ADAM optimizer beta (0.9-0.999, higher=more stable, prevents gradient explosion) |
+
+These advanced parameters can help fine-tune training convergence and performance. The stability parameters are especially important for long GPU training sessions to prevent data loss and gradient instability.
 
 **Note on BATCH_SIZE**: Most users should leave this at 0 and use `GPU_MAX_MEMORY` for implicit batching, which is more reliable. The `BATCH_SIZE` parameter is only supported in Tesseract 5.x and newer.
 
@@ -312,6 +319,7 @@ These advanced parameters can help fine-tune training convergence and performanc
 
 For comprehensive information on specific topics:
 
+- **[GPU_STABILITY_GUIDE.md](./GPU_STABILITY_GUIDE.md)** - **NEW!** Fix "GPU disconnects after 2 minutes" issue
 - **[BATCH_SIZE_EXAMPLE.md](./BATCH_SIZE_EXAMPLE.md)** - How to use explicit batch size parameter (Tesseract 5.x+)
 - **[CUDA_OPTIMIZATION.md](./CUDA_OPTIMIZATION.md)** - Complete CUDA/GPU optimization guide
 - **[BATCH_PROCESSING_GUIDE.md](./BATCH_PROCESSING_GUIDE.md)** - Batch processing and GPU utilization

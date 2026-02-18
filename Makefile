@@ -100,6 +100,12 @@ MOMENTUM ?= 0.9
 # Note: Requires Tesseract 5.x or newer. Most users should leave this at 0 and use GPU_MAX_MEMORY instead.
 BATCH_SIZE ?= 0
 
+# GPU Stability Parameters
+# Checkpoint interval - save model every N iterations (prevents data loss on GPU disconnect). Default: $(CHECKPOINT_INTERVAL)
+CHECKPOINT_INTERVAL ?= 100
+# ADAM Beta parameter - controls gradient stability (0.9-0.999, higher=more stable). Default: $(ADAM_BETA)
+ADAM_BETA ?= 0.999
+
 TESSERACT_SCRIPTS := Arabic Armenian Bengali Bopomofo Canadian_Aboriginal Cherokee Cyrillic
 TESSERACT_SCRIPTS += Devanagari Ethiopic Georgian Greek Gujarati Gurmukhi
 TESSERACT_SCRIPTS += Hangul Han Hebrew Hiragana Kannada Katakana Khmer Lao Latin
@@ -212,6 +218,11 @@ help:
 	@echo "    MOMENTUM           Gradient descent momentum (0.0-1.0). Default: $(MOMENTUM)"
 	@echo "    BATCH_SIZE         Explicit batch size (0=disabled, uses GPU_MAX_MEMORY implicit batching). Default: $(BATCH_SIZE)"
 	@echo "                       Note: Requires Tesseract 5.x+. Most users should use GPU_MAX_MEMORY instead."
+	@echo ""
+	@echo "  GPU Stability Parameters"
+	@echo ""
+	@echo "    CHECKPOINT_INTERVAL  Save model every N iterations (prevents data loss). Default: $(CHECKPOINT_INTERVAL)"
+	@echo "    ADAM_BETA           ADAM optimizer beta (0.9-0.999, higher=more stable). Default: $(ADAM_BETA)"
 	@echo ""
 	@echo "  Note: lstmtraining doesn't have explicit batch size parameter. Instead, it processes"
 	@echo "        images in parallel based on GPU_MAX_MEMORY. Higher memory = more images processed"
@@ -366,6 +377,8 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@echo "$(if $(filter 1,$(USE_GPU)),GPU Max Memory: $(GPU_MAX_MEMORY) MB,)"
 	@echo "$(if $(filter 1,$(USE_GPU)),Network Mode: $(if $(filter 1,$(NET_MODE)),Parallel (Fast),Serial (Memory-efficient)),)"
 	@echo "OpenMP Threads: $(if $(filter 1,$(USE_GPU)),1 (GPU mode),$(OMP_NUM_THREADS))"
+	@echo "Checkpoint Interval: $(CHECKPOINT_INTERVAL) iterations"
+	@echo "Adam Beta: $(ADAM_BETA)"
 	@echo "Learning Rate: $(LEARNING_RATE)"
 	@echo "Max Iterations: $(MAX_ITERATIONS)"
 	@echo "=============================="
@@ -405,7 +418,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	  --max_iterations $(MAX_ITERATIONS) \
 	  --target_error_rate $(TARGET_ERROR_RATE) \
 	  $(if $(filter 1,$(USE_GPU)),--max_image_MB $(GPU_MAX_MEMORY) --net_mode $(NET_MODE),) \
-	  $(if $(and $(filter 1,$(USE_GPU)),$(filter-out -1,$(APPEND_INDEX))),--append_index $(APPEND_INDEX),)$(if $(filter-out 0,$(PERFECT_SAMPLE_DELAY)), --perfect_sample_delay $(PERFECT_SAMPLE_DELAY),)$(if $(WEIGHT_RANGE), --weight_range $(WEIGHT_RANGE),)$(if $(MOMENTUM), --momentum $(MOMENTUM),)$(if $(filter-out 0,$(BATCH_SIZE)), --batch_size $(BATCH_SIZE),) \
+	  $(if $(and $(filter 1,$(USE_GPU)),$(filter-out -1,$(APPEND_INDEX))),--append_index $(APPEND_INDEX),)$(if $(filter-out 0,$(PERFECT_SAMPLE_DELAY)), --perfect_sample_delay $(PERFECT_SAMPLE_DELAY),)$(if $(WEIGHT_RANGE), --weight_range $(WEIGHT_RANGE),)$(if $(MOMENTUM), --momentum $(MOMENTUM),)$(if $(filter-out 0,$(BATCH_SIZE)), --batch_size $(BATCH_SIZE),)$(if $(CHECKPOINT_INTERVAL), --checkpoint_interval $(CHECKPOINT_INTERVAL),)$(if $(ADAM_BETA), --adam_beta $(ADAM_BETA),) \
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
@@ -424,6 +437,8 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	@echo "$(if $(filter 1,$(USE_GPU)),GPU Max Memory: $(GPU_MAX_MEMORY) MB,)"
 	@echo "$(if $(filter 1,$(USE_GPU)),Network Mode: $(if $(filter 1,$(NET_MODE)),Parallel (Fast),Serial (Memory-efficient)),)"
 	@echo "OpenMP Threads: $(if $(filter 1,$(USE_GPU)),1 (GPU mode),$(OMP_NUM_THREADS))"
+	@echo "Checkpoint Interval: $(CHECKPOINT_INTERVAL) iterations"
+	@echo "Adam Beta: $(ADAM_BETA)"
 	@echo "Learning Rate: $(LEARNING_RATE)"
 	@echo "Max Iterations: $(MAX_ITERATIONS)"
 	@echo "=============================="
@@ -462,7 +477,7 @@ $(LAST_CHECKPOINT): unicharset lists $(PROTO_MODEL)
 	  --max_iterations $(MAX_ITERATIONS) \
 	  --target_error_rate $(TARGET_ERROR_RATE) \
 	  $(if $(filter 1,$(USE_GPU)),--max_image_MB $(GPU_MAX_MEMORY) --net_mode $(NET_MODE),) \
-	  $(if $(and $(filter 1,$(USE_GPU)),$(filter-out -1,$(APPEND_INDEX))),--append_index $(APPEND_INDEX),)$(if $(filter-out 0,$(PERFECT_SAMPLE_DELAY)), --perfect_sample_delay $(PERFECT_SAMPLE_DELAY),)$(if $(WEIGHT_RANGE), --weight_range $(WEIGHT_RANGE),)$(if $(MOMENTUM), --momentum $(MOMENTUM),)$(if $(filter-out 0,$(BATCH_SIZE)), --batch_size $(BATCH_SIZE),) \
+	  $(if $(and $(filter 1,$(USE_GPU)),$(filter-out -1,$(APPEND_INDEX))),--append_index $(APPEND_INDEX),)$(if $(filter-out 0,$(PERFECT_SAMPLE_DELAY)), --perfect_sample_delay $(PERFECT_SAMPLE_DELAY),)$(if $(WEIGHT_RANGE), --weight_range $(WEIGHT_RANGE),)$(if $(MOMENTUM), --momentum $(MOMENTUM),)$(if $(filter-out 0,$(BATCH_SIZE)), --batch_size $(BATCH_SIZE),)$(if $(CHECKPOINT_INTERVAL), --checkpoint_interval $(CHECKPOINT_INTERVAL),)$(if $(ADAM_BETA), --adam_beta $(ADAM_BETA),) \
 	2>&1 | tee -a $(LOG_FILE)
 $(OUTPUT_DIR).traineddata: $(LAST_CHECKPOINT)
 	@echo
