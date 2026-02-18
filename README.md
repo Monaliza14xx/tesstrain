@@ -261,7 +261,12 @@ make training MODEL_NAME=yourmodel \
   MAX_ITERATIONS=50000
 ```
 
-**Note**: lstmtraining doesn't have a separate `batch_size` parameter. Instead, `GPU_MAX_MEMORY` controls how many images are processed in parallel (implicit batching). Higher memory = larger effective batch size = faster training.
+**Note**: Tesseract 4.x and earlier don't have an explicit `--batch_size` parameter. Instead, `GPU_MAX_MEMORY` controls how many images are processed in parallel (implicit batching). Higher memory = larger effective batch size = faster training.
+
+For Tesseract 5.x and newer, you can optionally use explicit `BATCH_SIZE`:
+```bash
+make training MODEL_NAME=mymodel USE_GPU=1 BATCH_SIZE=500
+```
 
 See [BATCH_PROCESSING_GUIDE.md](./BATCH_PROCESSING_GUIDE.md) for details on maximizing GPU utilization.
 
@@ -297,8 +302,11 @@ Without `TESSERACT_OPENCL_DEVICE`, Tesseract will default to CPU even if a GPU i
 | `PERFECT_SAMPLE_DELAY` | 0 | Iterations before using perfect samples (0=disabled) |
 | `WEIGHT_RANGE` | 0.1 | Weight initialization range (higher=more random) |
 | `MOMENTUM` | 0.9 | Gradient descent momentum (0.0-1.0) |
+| `BATCH_SIZE` | 0 | Explicit batch size (0=disabled, uses GPU_MAX_MEMORY). Requires Tesseract 5.x+ |
 
 These advanced parameters can help fine-tune training convergence and performance.
+
+**Note on BATCH_SIZE**: Most users should leave this at 0 and use `GPU_MAX_MEMORY` for implicit batching, which is more reliable. The `BATCH_SIZE` parameter is only supported in Tesseract 5.x and newer.
 
 ### Detailed Guide
 

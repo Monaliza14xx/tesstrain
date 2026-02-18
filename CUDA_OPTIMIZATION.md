@@ -198,12 +198,15 @@ Fine-tune the training process with these advanced parameters:
 | `PERFECT_SAMPLE_DELAY` | 0 | Iterations before using perfect samples (0=disabled, >0=delay) |
 | `WEIGHT_RANGE` | 0.1 | Range for initial random weights (higher=more random initialization) |
 | `MOMENTUM` | 0.9 | Gradient descent momentum (0.0-1.0, higher=more momentum) |
+| `BATCH_SIZE` | 0 | Explicit batch size (0=disabled, uses GPU_MAX_MEMORY). Requires Tesseract 5.x+ |
 
 **Perfect Sample Delay**: Controls when the network starts using "perfect" training samples. Setting this to a positive value (e.g., 4000) can help with convergence by allowing the network to learn from imperfect samples first.
 
 **Weight Range**: Controls the randomization of initial network weights. Default 0.1 works well for most cases. Increase for more random initialization if training gets stuck.
 
 **Momentum**: Controls the momentum term in gradient descent. Default 0.9 provides good balance. Higher values (closer to 1.0) give more momentum, lower values give less.
+
+**Batch Size**: Explicit batch size for training. Only supported in Tesseract 5.x and newer. When set to 0 (default), uses implicit batching via GPU_MAX_MEMORY, which is recommended for most users.
 
 ```bash
 # Combine optimizations for maximum performance
