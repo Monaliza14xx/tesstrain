@@ -308,16 +308,15 @@ These advanced parameters can help fine-tune training convergence and performanc
 
 **Note on BATCH_SIZE**: Most users should leave this at 0 and use `GPU_MAX_MEMORY` for implicit batching, which is more reliable. The `BATCH_SIZE` parameter is only supported in Tesseract 5.x and newer.
 
-### Detailed Guide
+### Detailed Guides
 
-For comprehensive information on:
-- Building Tesseract with CUDA support
-- GPU/CPU optimization strategies
-- Performance tuning and benchmarks
-- Troubleshooting
-- Advanced training parameters
+For comprehensive information on specific topics:
 
-See the [CUDA and Performance Optimization Guide](./CUDA_OPTIMIZATION.md).
+- **[BATCH_SIZE_EXAMPLE.md](./BATCH_SIZE_EXAMPLE.md)** - How to use explicit batch size parameter (Tesseract 5.x+)
+- **[CUDA_OPTIMIZATION.md](./CUDA_OPTIMIZATION.md)** - Complete CUDA/GPU optimization guide
+- **[BATCH_PROCESSING_GUIDE.md](./BATCH_PROCESSING_GUIDE.md)** - Batch processing and GPU utilization
+- **[GPU_TROUBLESHOOTING.md](./GPU_TROUBLESHOOTING.md)** - GPU troubleshooting and fixes
+- **[TRAINING_EXAMPLES.md](./TRAINING_EXAMPLES.md)** - Training examples and recipes
 
 ### GPU Performance Validation
 
