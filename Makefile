@@ -58,7 +58,7 @@ else
 MAX_ITERATIONS := -$(EPOCHS)
 endif
 
-# Debug Interval. Default:  $(DEBUG_INTERVAL)
+# Debug Interval. Default: $(DEBUG_INTERVAL)
 DEBUG_INTERVAL := 0
 
 # Learning rate. Default: $(LEARNING_RATE)
@@ -182,7 +182,7 @@ help:
 	@echo "    TESSDATA_REPO      Tesseract model repo to use (_fast or _best). Default: $(TESSDATA_REPO)"
 	@echo "    MAX_ITERATIONS     Max iterations. Default: $(MAX_ITERATIONS)"
 	@echo "    EPOCHS             Set max iterations based on the number of lines for the training. Default: none"
-	@echo "    DEBUG_INTERVAL     Debug Interval. Default:  $(DEBUG_INTERVAL)"
+	@echo "    DEBUG_INTERVAL     Debug Interval. Default: $(DEBUG_INTERVAL)"
 	@echo "    LEARNING_RATE      Learning rate. Default: $(LEARNING_RATE)"
 	@echo "    NET_SPEC           Network specification (in VGSL) for new model from scratch. Default: $(NET_SPEC)"
 	@echo "    LANG_TYPE          Language Type - Indic, RTL or blank. Default: '$(LANG_TYPE)'"

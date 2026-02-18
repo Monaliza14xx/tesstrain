@@ -135,7 +135,7 @@ Run `make help` to see all the possible targets and variables:
                        (for example tesseract-ocr/tessdata_best). Default: ./usr/share/tessdata
     MAX_ITERATIONS     Max iterations. Default: 10000
     EPOCHS             Set max iterations based on the number of lines for training. Default: none
-    DEBUG_INTERVAL     Debug Interval. Default:  0
+    DEBUG_INTERVAL     Debug Interval. Default: 0
     LEARNING_RATE      Learning rate. Default: 0.0001 with START_MODEL, otherwise 0.002
     NET_SPEC           Network specification (in VGSL) for new model from scratch. Default: [1,36,0,1 Ct3,3,16 Mp3,3 Lfys48 Lfx96 Lrx96 Lfx256 O1c###]
     FINETUNE_TYPE      Fine-tune Training Type - Impact, Plus, Layer or blank. Default: ''

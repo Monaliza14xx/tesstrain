@@ -2,3 +2,12 @@
 *.built
 *.BAK
 *~
+__pycache__/
+*.pyc
+*.png
+*.pdf
+*.json
+*.traineddata
+*.lstm
+*.checkpoint
+*.log
